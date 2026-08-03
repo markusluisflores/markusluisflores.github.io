@@ -83,9 +83,9 @@ Resume content lives in `resume.json`, separate from templates, so editing a job
 
 No unit tests — there's no application logic, just presentational markup driven by data. Instead:
 
-- **HTML validation** (`html-validate` or equivalent) — catches broken markup.
+- **HTML validation** via `html-validate` — catches broken markup.
 - **Broken-link check** — catches a dead GitHub/LinkedIn/PDF link before it ships.
-- **Lighthouse CI** — performance/accessibility/SEO budget (e.g. fail under an accessibility score threshold) — relevant because this site is itself a professional signal.
+- **Lighthouse CI** — fails the build if the accessibility score drops below **90** (performance/SEO scores are reported but non-blocking) — relevant because this site is itself a professional signal.
 - The Eleventy build succeeding is itself a check (a broken Nunjucks template or malformed `resume.json` fails the build).
 
 All of the above run in `ci.yml` on every PR.
@@ -121,3 +121,4 @@ Not adopted for this project (assessed and declined at project start): RFCs, AGE
 - User's existing resume content, to populate `resume.json`.
 - A PDF version of the resume, for `src/assets/resume.pdf`.
 - Exact font and color choices — to be made during implementation via the `frontend-design` skill.
+- Favicon — either user-supplied, or generated during implementation the same way `og:image` is (a simple generated card), rather than user-supplied by default.
