@@ -5,7 +5,7 @@ Personal resume/portfolio site, published via GitHub Pages from this repo's `mai
 ## Constraints
 
 - Must remain a **public** repository. GitHub Pages on the free plan only publishes from public repos — going private would take the site down (would require GitHub Pro to keep it working private).
-- Static site only: plain HTML/CSS/JS (or a GitHub Pages-supported static site generator, e.g. Jekyll). No server-side runtime.
+- Static site only, no server-side runtime. Built with **Eleventy**, compiled to static HTML/CSS/JS and deployed via GitHub Actions (see [ADR-001](docs/adr/ADR-001-static-site-generator.md) for why Eleventy over Jekyll or a no-build plain HTML/CSS/JS approach).
 
 ## Project-specific overrides to the global workflow
 

@@ -1,6 +1,6 @@
 # Resume/Portfolio Site — Design
 
-**Status:** Approved
+**Status:** Proposed (pending PR review/merge)
 **Date:** 2026-08-03
 
 ## Purpose
@@ -30,11 +30,18 @@ Nav is anchor links (Experience / Skills / Education) in a slim sticky header al
 
 No headshot/photo — typography-driven hero instead.
 
+The theme toggle is **one logical control with two visual instances** (header and footer) — both reflect and set the same `data-theme` state (see Visual design system below), kept in sync via shared JS, not independent controls with separate state.
+
+### Head metadata
+
+Beyond the visible content sections, `base.njk` sets: page `<title>`, a meta description (short professional summary, reused as the OG description), Open Graph tags (`og:title`, `og:description`, `og:image` — a simple generated card, since LinkedIn/social shares render these), and a favicon. This matters concretely because Lighthouse's SEO check is a CI gate (see Quality, testing & CI below) and because the page's contact links include LinkedIn, where a shared link with no OG image/description looks unpolished.
+
 ## Visual design system
 
 - **Aesthetic direction: modern & distinctive** (chosen over minimal/professional and developer/technical) — the user's actual paper resume already covers the safe/minimal treatment for direct employer submissions; this site is the place for a stronger visual identity.
 - **Typography**: a distinctive display font for name/headers (e.g. Fraunces, Space Grotesk, or Sora — exact choice deferred to implementation) paired with a plain workhorse sans (Inter or system-ui) for body text.
 - **Color**: CSS custom properties (`--bg`, `--text`, `--accent`, `--surface`, etc.) define the theme once; dark/light toggle swaps a `data-theme` attribute on `<html>`. Default follows `prefers-color-scheme`; user override persists via `localStorage`. One deliberate accent color (not default blue), used consistently for the hero accent, links, and skill-chip highlights.
+- **Theme detection must run before first paint** to avoid a flash of the wrong theme: a small inline `<script>` in `base.njk`'s `<head>` (not the deferred `assets/js/theme-toggle.js` file) reads `localStorage`/`prefers-color-scheme` and sets `data-theme` synchronously. The external `theme-toggle.js` file only handles the click-to-toggle interaction after load.
 - **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy.
 - **No CSS framework** (no Tailwind/Bootstrap) — hand-written CSS, consistent with a hand-designed (not templated) look.
 - Exact font/color values are an implementation-time decision, made via the `frontend-design` skill per the standard workflow, not fixed in this spec.
@@ -66,7 +73,7 @@ markusluisflores.github.io/
 ├── .eleventy.js               # Eleventy config (input/output dirs, passthrough copy)
 ├── package.json
 └── .github/workflows/
-    ├── ci.yml                 # lint, HTML validation, link check, Lighthouse, CodeQL — runs on PRs
+    ├── ci.yml                 # lint, HTML validation, link check, Lighthouse, CodeQL, npm audit — runs on PRs
     └── deploy.yml              # build with Eleventy, publish _site/ to Pages — runs on push to main
 ```
 
@@ -98,7 +105,7 @@ Not adopted for this project (assessed and declined at project start): RFCs, AGE
 ## Deployment
 
 - Repo's Pages source set to **"GitHub Actions"** (not legacy "deploy from branch") so the Eleventy build runs before publishing.
-- `deploy.yml` triggers on push to `main`: `npm ci` → `npx @11ty/eleventy` → publish `_site/` via `actions/deploy-pages`.
+- `deploy.yml` triggers on push to `main`, using the standard two-step Pages deploy pattern: `npm ci` → `npx @11ty/eleventy` → `actions/upload-pages-artifact` packages `_site/` as a Pages artifact → a separate `actions/deploy-pages` step deploys that artifact. Requires `pages: write` and `id-token: write` workflow permissions.
 - No custom domain for now — stays on `markusluisflores.github.io`; a `CNAME` file can be added later if wanted.
 - Hosting stays free throughout, contingent on the repo remaining public (per the Constraints section above).
 
