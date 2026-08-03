@@ -12,7 +12,7 @@ Turn `markusluisflores.github.io` from a placeholder into a personal resume site
 - **Repo must stay public.** GitHub Pages on the Free plan only builds from public repositories; going private would take the site down without upgrading to GitHub Pro. (Confirmed against current GitHub docs, 2026-08-03.)
 - Static output only — GitHub Pages serves static files; any build step must run in CI (GitHub Actions) and publish static output, since GitHub Pages does not run arbitrary server code.
 - Solo project, no collaborators — process/tooling choices below are scoped accordingly (no RFCs, no AGENTS.md, no log4brains — decided against per the New Project checklist's assessment step).
-- This repo does not carry the usual AI-workflow paper trail: commits omit the `Co-Authored-By: Claude` trailer, and `journal`/`interview-prep` outputs are gitignored (local-only, never pushed to `main`). Documented in the project's `CLAUDE.md`.
+- `journal`/`interview-prep` outputs are gitignored (local-only, never pushed to `main`) so this repo isn't cluttered with the usual AI-workflow paper trail. Documented in the project's `CLAUDE.md`. Commits keep the standard `Co-Authored-By: Claude` trailer, same as every other project — no attempt to obscure that this is AI-assisted work.
 
 ## Scope decision
 
@@ -93,7 +93,7 @@ All of the above run in `ci.yml` on every PR.
 Quality baseline, scoped to what applies to a static JS-tooling project (per the standard New Project checklist):
 
 - **Pre-commit**: husky + lint-staged running ESLint (the small amount of vanilla JS), Prettier (HTML/CSS/JS/JSON), Stylelint (CSS).
-- **Commit-msg linting**: commitlint hook per the global git commit standard (still applies in full — only the `Co-Authored-By` trailer is dropped for this repo).
+- **Commit-msg linting**: commitlint hook per the global git commit standard, applied in full — no deviations for this repo.
 - **Secret scanning**: gitleaks pre-commit + GitHub push protection.
 - **SAST**: CodeQL for JavaScript in CI.
 - **Dependency scan**: Dependabot + `npm audit` in CI.
