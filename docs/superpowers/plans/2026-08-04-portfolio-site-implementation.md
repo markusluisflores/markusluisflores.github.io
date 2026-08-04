@@ -1368,7 +1368,9 @@ jobs:
       - run: npx @lhci/cli autorun
 ```
 
-Note: `linkinator` skips LinkedIn URLs — LinkedIn blocks automated requests from CI bots (returns non-200 to non-browser clients), which would otherwise cause false-positive failures on a link that works fine for real visitors. `--skip` takes a regular expression, not a glob — `https://www.linkedin.com/*` happens to work here since `.` and `*` are valid (if slightly loose) regex syntax against this specific URL shape, but don't read the trailing `*` as glob wildcard syntax if reusing this pattern elsewhere.
+Note: the LinkedIn `--skip` is **defence-in-depth, not a load-bearing fix** — don't remove it, but don't believe it's what keeps CI green either. LinkedIn blocks automated requests from CI bots, answering HTTP `999` to non-browser clients. Measured against the current `linkinator` (v7.6.1): the LinkedIn URL is reported `SKIPPED 999` and the run exits 0 **even with no `--skip` flag at all**, because linkinator now special-cases bot-protection responses itself (`999`, and `403` carrying a `cf-mitigated` header) as skipped rather than broken. So the flag is currently redundant; it's kept because it costs nothing and pins the behaviour if that built-in handling ever changes or LinkedIn switches to a different blocking status. The practical consequence either way is that **LinkedIn is never actually validated** — which is why the manual click-check in the Post-implementation checklist below is the only real coverage for it.
+
+`--skip` takes a regular expression, not a glob — `https://www.linkedin.com/*` happens to work here since `.` and `*` are valid (if slightly loose) regex syntax against this specific URL shape, but don't read the trailing `*` as glob wildcard syntax if reusing this pattern elsewhere.
 
 A second skip is required for a different reason: `linkinator` resolves any URL that parses as absolute (including `og:image`/`og:url`'s meta tag values, which the ogp.me fix earlier in this plan deliberately made absolute) by actually fetching it — from the **live site**, not from the local `_site/` build. Before the first deploy, `https://markusluisflores.github.io/assets/og-image.png` 404s (nothing's been deployed yet), which would permanently fail this required CI check on the very first PR — a genuine chicken-and-egg deadlock, confirmed empirically (`[404]` on the live URL, exit 1 without the skip; exit 0 with it). `--skip "^https://markusluisflores.github.io/"` treats the site's own absolute URLs as already-covered by the local build/render checks (html-validate, the grep assertions) rather than re-fetching them externally.
 
@@ -1413,7 +1415,15 @@ npm install --save-dev linkinator @lhci/cli
 }
 ```
 
-Verified: with this override in place, `npm audit --audit-level=high` exits 0 (two remaining moderate-severity `uuid` advisories stay below the `high` threshold, consistent with the quality baseline's stated policy of starting audits at `high` severity).
+Then **re-run `npm install` to regenerate `package-lock.json`** — this is not optional bookkeeping, and editing `package.json` alone is not enough:
+
+```bash
+npm install
+```
+
+An `overrides` block only takes effect once the lockfile is resolved against it. Confirmed empirically, adding the block without reinstalling: `npm audit --audit-level=high` still exits 1 on the same `tmp` advisory (npm audits the lockfile's resolved tree, not `package.json`'s intent), and — worse — `package.json` and `package-lock.json` are now out of sync, so `npm ci` hard-fails with `npm error code EUSAGE` / `Invalid: lock file's tmp@0.1.0 does not satisfy tmp@0.2.7`. Since **all three `ci.yml` jobs and `deploy.yml` start with `npm ci`**, committing that state would fail every required status check on the first PR and block the deploy — not just the `quality` job's audit step.
+
+Verified after the reinstall: the lockfile resolves `tmp@0.2.7`, `npm audit --audit-level=high` exits 0 (two remaining moderate-severity `uuid` advisories stay below the `high` threshold, consistent with the quality baseline's stated policy of starting audits at `high` severity), and `npm ci` exits 0.
 
 - [ ] **Step 4: Copy CodeQL workflow verbatim from github-setup templates**
 
@@ -1557,6 +1567,19 @@ Edit `CONTRIBUTING.md`:
 - `npm run dev` (Development Setup block) → `npm run serve` — this project's actual script name (Task 1), not the template's generic placeholder command
 - `Write or update tests for any logic changes` (Workflow section, step 2) → `Update resume.json or templates for content/markup changes` — the template's step assumes a project with a test suite; this one has neither logic nor tests to update, found during a full self-sweep after round 4 caught the adjacent step 3 issue but not this one
 - `Run \`npm test\` — all tests must pass before opening a PR` (Workflow section, step 3) → `Run \`npm run lint\` and \`npm run build\` — both must succeed before opening a PR` — this project has no `test` script; per the design spec, there's no unit-test suite (presentational markup driven by data), so the template's generic testing step needs replacing, not just leaving as dead text that errors if anyone actually runs it
+- **Example content carried over from another project** — the template's illustrative examples are all from the `calculator` project's domain and name tooling this repo doesn't use. These aren't `[BRACKETED]` placeholders so a placeholder scan won't catch them, but this repo *is* the public-facing resume: a CONTRIBUTING.md telling readers to `chore: update Vite to v6` in an Eleventy project reads as unreviewed copy-paste to exactly the audience this site is for. Replace:
+  - Branch Naming table, Bug fix row: `fix/decimal-input` → `fix/timeline-overflow`
+  - Branch Naming table, Docs row: `docs/api-reference` → `docs/resume-content` (this project has no API)
+  - Commit Messages example block — replace all four lines with project-real examples:
+
+    ```
+    feat: add projects section to the resume page
+    fix: correct chip wrapping on narrow viewports
+    docs: update CONTRIBUTING with the lint workflow
+    chore: update Eleventy to v3.2
+    ```
+
+  (`feat/dark-mode` and `chore/update-deps` in the table are already apt for this project — leave those two alone.)
 
 Edit `.github/ISSUE_TEMPLATE/config.yml`: replace `[SECURITY_URL]` with `https://github.com/markusluisflores/markusluisflores.github.io/security/policy`.
 
