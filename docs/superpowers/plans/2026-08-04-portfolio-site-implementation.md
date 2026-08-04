@@ -392,18 +392,45 @@ Consists of:
 ## Task 4: Base layout + head metadata + page content
 
 **Files:**
+- Create: `src/_includes/contact-links.njk`
 - Create: `src/_layouts/base.njk`
 - Modify: `src/index.njk` (replace placeholder with real content)
 
 **Interfaces:**
-- Consumes: `resume` global data object (Task 3) — exact shape: `resume.name`, `resume.title`, `resume.tagline`, `resume.links.{email,github,linkedin}`, `resume.experience[].{role,company,dates,bullets[]}`, `resume.skills[].{category,items[]}`, `resume.education[].{degree,school,location,dates,note}`.
-- Produces: page markup with hooks `data-theme-toggle` (button elements, consumed by Task 6's JS) and `id="experience"` / `id="skills"` / `id="education"` (anchor targets for nav, consumed by Task 5's CSS for sticky-header offset).
+- Consumes: `resume` global data object (Task 3) — exact shape: `resume.name`, `resume.title`, `resume.tagline`, `resume.location`, `resume.links.{email,github,linkedin}`, `resume.experience[].{role,company,dates,bullets[]}`, `resume.skills[].{category,items[]}`, `resume.education[].{degree,school,location,dates,note}` (note: `resume.location` and `edu.location` are unrelated fields on different objects — don't conflate them).
+- Produces: page markup with hooks `data-theme-toggle` (button elements, consumed by Task 6's JS), `.contact-link` elements (icon + text, consumed by Task 5's CSS), and `id="experience"` / `id="skills"` / `id="education"` (anchor targets for nav, consumed by Task 5's CSS for sticky-header offset).
 
-- [ ] **Step 1: Write the base layout**
+- [ ] **Step 1: Write the shared contact-links macro**
+
+The spec requires contact links as icon+text in both the Hero and the footer — rather than duplicating three anchors twice (which is exactly the kind of repeated cross-cutting markup that drifts out of sync), write it once as a Nunjucks macro and call it from both places.
+
+Create `src/_includes/contact-links.njk`:
+
+```njk
+{% macro contactLinks(links) %}
+<a href="mailto:{{ links.email }}" class="contact-link">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2 4h20v16H2V4zm2 2v.01L12 12l8-5.99V6H4zm16 12V8.24l-8 6-8-6V18h16z"/></svg>
+  <span>Email</span>
+</a>
+<a href="{{ links.github }}" class="contact-link">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.4 9.4 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+  <span>GitHub</span>
+</a>
+<a href="{{ links.linkedin }}" class="contact-link">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+  <span>LinkedIn</span>
+</a>
+{% endmacro %}
+```
+
+Icons use `fill="currentColor"` so they automatically inherit the surrounding link's text color — no separate icon-color CSS needed per theme.
+
+- [ ] **Step 2: Write the base layout**
 
 Create `src/_layouts/base.njk`:
 
 ```njk
+{% import "contact-links.njk" as contact %}
 {% set pageTitle = title or (resume.name + " — " + resume.title) %}
 <!doctype html>
 <html lang="en">
@@ -442,9 +469,7 @@ Create `src/_layouts/base.njk`:
 
   <footer class="site-footer">
     <div class="footer-links">
-      <a href="mailto:{{ resume.links.email }}">Email</a>
-      <a href="{{ resume.links.github }}">GitHub</a>
-      <a href="{{ resume.links.linkedin }}">LinkedIn</a>
+      {{ contact.contactLinks(resume.links) }}
     </div>
     <a class="download-resume" href="/assets/resume.pdf" download>Download Resume (PDF)</a>
     <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
@@ -457,7 +482,7 @@ Create `src/_layouts/base.njk`:
 
 Note: the theme-detection `<script>` in `<head>` is deliberately inline and unminified/unbundled — it must run synchronously before first paint to avoid a flash of the wrong theme (per the spec). `theme-toggle.js` (Task 6) is loaded separately at the end of `<body>` and only handles the click interaction.
 
-- [ ] **Step 2: Replace the placeholder page with real content**
+- [ ] **Step 3: Replace the placeholder page with real content**
 
 Replace `src/index.njk` entirely:
 
@@ -467,14 +492,13 @@ layout: base.njk
 title: "Markus Luis Flores — Software Developer"
 description: "Software Developer with 5+ years of experience building and maintaining large-scale SaaS applications."
 ---
+{% import "contact-links.njk" as contact %}
 <section class="hero">
   <h1>{{ resume.name }}</h1>
-  <p class="hero-title">{{ resume.title }}</p>
+  <p class="hero-title">{{ resume.title }} · {{ resume.location }}</p>
   <p class="hero-tagline">{{ resume.tagline }}</p>
   <div class="hero-links">
-    <a href="mailto:{{ resume.links.email }}">Email</a>
-    <a href="{{ resume.links.github }}">GitHub</a>
-    <a href="{{ resume.links.linkedin }}">LinkedIn</a>
+    {{ contact.contactLinks(resume.links) }}
   </div>
 </section>
 
@@ -521,21 +545,22 @@ description: "Software Developer with 5+ years of experience building and mainta
 </section>
 ```
 
-- [ ] **Step 3: Build and verify the real content renders**
+- [ ] **Step 4: Build and verify the real content renders**
 
 ```bash
 npm run build
 grep -c "Royal Bank of Canada" _site/index.html
 grep -c "data-theme-toggle" _site/index.html
 grep -c "og:image" _site/index.html
+grep -c "contact-link" _site/index.html
 ```
 
-Expected: build exits 0; each `grep -c` returns a count ≥ 1 (RBC appears once, `data-theme-toggle` appears twice — header + footer buttons — `og:image` appears once).
+Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggle` returns 2 (header + footer buttons). `contact-link` returns 6 (3 links × 2 places — Hero and footer both call the macro).
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add src/_layouts/base.njk src/index.njk
+git add src/_includes/contact-links.njk src/_layouts/base.njk src/index.njk
 git commit -m "feat: build the resume page from layout and real data
 
 Implements the spec's content sections (Hero, Experience, Skills,
@@ -543,9 +568,13 @@ Education, Footer) as Nunjucks templates consuming resume.json. Head
 metadata (title, description, OG tags, favicon link) lives in the
 shared layout so it doesn't need repeating per page. Theme toggle
 appears in both header and footer as two buttons sharing one
-data-theme-toggle hook, wired up fully in Task 6.
+data-theme-toggle hook, wired up fully in Task 6. Contact links
+(Email, GitHub, LinkedIn) render as icon+text per the spec, via one
+shared macro called from both the Hero and the footer rather than
+duplicated markup.
 
 Consists of:
+- src/_includes/contact-links.njk: shared icon+text contact-link macro
 - src/_layouts/base.njk: head metadata, nav, header/footer, FOUC-safe
   inline theme-detection script
 - src/index.njk: Hero/Experience/Skills/Education sections, replaces
@@ -560,7 +589,7 @@ Consists of:
 - Create: `src/assets/css/style.css`
 
 **Interfaces:**
-- Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`).
+- Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `.contact-link` (from the shared macro), `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`).
 - Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` / `:root[data-theme="light"]` selectors, consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly).
 
 Before writing CSS, invoke the `frontend-design` skill (per the global workflow — implementation-time UI code requires it) to validate or refine the typography pairing and accent color proposed below against the "modern & distinctive" direction approved in the spec.
@@ -683,12 +712,22 @@ main {
   max-width: 60ch;
 }
 
-.hero-links a {
-  color: var(--text);
-  margin-right: 1rem;
+.hero-links,
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
 }
 
-.hero-links a:hover {
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.contact-link:hover {
   color: var(--accent);
 }
 
@@ -757,11 +796,6 @@ Append to `style.css`:
   text-align: center;
 }
 
-.footer-links a {
-  color: var(--text);
-  margin: 0 0.5rem;
-}
-
 .download-resume {
   color: var(--bg);
   background: var(--accent);
@@ -790,16 +824,38 @@ Append to `style.css`:
 }
 ```
 
-- [ ] **Step 6: Verify Stylelint passes and the build still succeeds**
+- [ ] **Step 6: Add narrow-viewport styling**
+
+The spec names "mobile-first" as a requirement; the sticky header (3 nav links + a toggle button in a flex row) is the element most likely to break on a narrow screen. Append to `style.css`:
+
+```css
+@media (max-width: 640px) {
+  .site-header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .site-nav a {
+    margin-right: 0.75rem;
+  }
+
+  .hero h1 {
+    font-size: 1.875rem;
+  }
+}
+```
+
+- [ ] **Step 7: Verify Stylelint passes, the build succeeds, and the header doesn't break narrow**
 
 ```bash
 npx stylelint "src/assets/css/**/*.css"
 npm run build
+npm run serve
 ```
 
-Expected: both exit 0.
+Expected: stylelint and build both exit 0. With the dev server running, open the local URL and resize the browser (or use devtools' device toolbar) down to ~375px width: confirm the header's nav links and theme toggle wrap onto a second line rather than overlapping or clipping, and the hero heading doesn't overflow horizontally. Stop the server (Ctrl+C) when done.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add src/assets/css/style.css
@@ -809,8 +865,9 @@ Space Grotesk + Inter type pairing, a single terracotta accent color
 (light/dark variants), CSS custom properties driving the data-theme
 attribute contract Task 6's JS toggles. Sticky header, timeline-styled
 experience entries, chip-styled skills, reduced-motion-respecting
-fade-in transitions — matching the spec's Visual design system
-section. No CSS framework, hand-written throughout.
+fade-in transitions, and a narrow-viewport breakpoint for the header —
+matching the spec's Visual design system and mobile-first
+requirements. No CSS framework, hand-written throughout.
 
 Consists of:
 - src/assets/css/style.css: full theme system and page styling"
@@ -892,11 +949,13 @@ Consists of:
 
 **Files:**
 - Create: `src/assets/favicon.svg`
-- Create: `src/assets/og-image.svg`
+- Create: `src/assets/og-image.svg` (source; rasterized in Step 3, not referenced directly by any template)
+- Create: `src/assets/og-image.png` (the actual referenced asset)
+- Create: `scripts/generate-og-image.js`
 - Create: `src/assets/resume.pdf` (copied from the user's existing file)
 
 **Interfaces:**
-- Produces: the two asset paths already referenced in Task 4's `base.njk` (`/assets/favicon.svg`, `/assets/og-image.svg`, `/assets/resume.pdf`) — no interface change needed there, this task just makes those referenced paths resolve to real files.
+- Produces: the asset paths referenced in Task 4's `base.njk` — `/assets/favicon.svg`, `/assets/og-image.png` (not `.svg` — see Step 3), `/assets/resume.pdf`. Task 4's `og:image` meta tag must point at the `.png`, not the `.svg`.
 
 - [ ] **Step 1: Create the favicon**
 
@@ -909,7 +968,9 @@ Create `src/assets/favicon.svg`:
 </svg>
 ```
 
-- [ ] **Step 2: Create the OG share-card image**
+SVG favicons are broadly supported by browsers, so no rasterization needed here — unlike the OG image below, which specifically needs to work with social-platform crawlers.
+
+- [ ] **Step 2: Create the OG share-card source image**
 
 Create `src/assets/og-image.svg` (1200×630, the standard OG image dimension):
 
@@ -921,33 +982,86 @@ Create `src/assets/og-image.svg` (1200×630, the standard OG image dimension):
 </svg>
 ```
 
-- [ ] **Step 3: Copy the real PDF resume**
+- [ ] **Step 3: Rasterize it to PNG**
+
+Facebook's and LinkedIn's Open Graph crawlers commonly reject or ignore SVG for `og:image` (documented preference for jpg/png/gif) — and the spec's stated reason for having an OG image at all is specifically so LinkedIn shares look polished, so shipping raw SVG there would defeat its own purpose. Rasterize at asset-creation time instead:
+
+```bash
+npm install --save-dev sharp
+```
+
+Create `scripts/generate-og-image.js`:
+
+```js
+const sharp = require("sharp");
+const path = require("path");
+
+sharp(path.join(__dirname, "..", "src", "assets", "og-image.svg"))
+  .png()
+  .toFile(path.join(__dirname, "..", "src", "assets", "og-image.png"))
+  .then(() => console.log("og-image.png generated"))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+```
+
+Run it once now to generate the file:
+
+```bash
+node scripts/generate-og-image.js
+```
+
+Add a script entry to `package.json` so it re-runs automatically before every build (append `"prebuild": "node scripts/generate-og-image.js"` to the existing `"scripts"` block from Task 1).
+
+- [ ] **Step 4: Point Task 4's og:image meta tag at the PNG**
+
+In `src/_layouts/base.njk` (written in Task 4), change:
+
+```njk
+<meta property="og:image" content="/assets/og-image.svg">
+```
+
+to:
+
+```njk
+<meta property="og:image" content="/assets/og-image.png">
+```
+
+- [ ] **Step 5: Copy the real PDF resume**
 
 The source file's location on disk is a personal path and is deliberately not recorded in this document. Copy the user's existing resume PDF (its path was supplied directly during planning) into `src/assets/resume.pdf`.
 
-- [ ] **Step 4: Verify all three assets are copied into the build output**
+- [ ] **Step 6: Verify all assets are copied into the build output**
 
 ```bash
 npm run build
-ls _site/assets/favicon.svg _site/assets/og-image.svg _site/assets/resume.pdf
+ls _site/assets/favicon.svg _site/assets/og-image.png _site/assets/resume.pdf
+grep -c "og-image.png" _site/index.html
 ```
 
-Expected: all three files listed (confirms `.eleventy.js`'s passthrough copy from Task 1 is working for binary/non-template assets).
+Expected: all three files listed (confirms `.eleventy.js`'s passthrough copy from Task 1 is working for binary/non-template assets); `grep -c` returns 1 (confirms Task 4's meta tag was updated, not left pointing at the `.svg`).
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/assets/favicon.svg src/assets/og-image.svg src/assets/resume.pdf
+git add src/assets/favicon.svg src/assets/og-image.svg src/assets/og-image.png scripts/generate-og-image.js package.json package-lock.json src/_layouts/base.njk src/assets/resume.pdf
 git commit -m "feat: add favicon, OG share image, and downloadable PDF resume
 
 Favicon and OG image are simple generated SVGs (initials/name on the
 accent color) rather than user-supplied, per the spec's stated
-fallback. PDF is the user's real, existing resume file, copied in
-as-is.
+fallback. The OG image is rasterized to PNG via sharp at build time
+(a prebuild npm script) since social-platform crawlers commonly
+reject SVG for og:image — the favicon stays SVG since browsers
+support that directly. PDF is the user's real, existing resume file,
+copied in as-is.
 
 Consists of:
 - src/assets/favicon.svg: browser-tab icon
-- src/assets/og-image.svg: 1200x630 social-share card
+- src/assets/og-image.svg: 1200x630 social-share card source
+- src/assets/og-image.png: rasterized version actually referenced by og:image
+- scripts/generate-og-image.js: sharp-based SVG-to-PNG conversion, run via a prebuild script
+- src/_layouts/base.njk: og:image meta tag repointed at the .png
 - src/assets/resume.pdf: real downloadable resume"
 ```
 
@@ -1166,6 +1280,7 @@ Consists of:
 - Create: `.github/dependabot.yml`
 - Create: `SECURITY.md`
 - Create: `CONTRIBUTING.md`
+- Delete: `index.html` (pre-Eleventy placeholder, superseded once Pages serves via Actions)
 
 **Interfaces:** none — this task is GitHub configuration + templates, not code other tasks depend on. Must run after Task 8, since branch protection's required-checks list names jobs Task 8 creates.
 
@@ -1211,22 +1326,29 @@ gh label create "dependencies"     --color "0075ca" --description "Dependency up
 
 - [ ] **Step 4: Configure branch protection**
 
+`gh api`'s `--field`/`-F` does type conversion on scalar values (`true`/`false`/`null`/numbers), but it does **not** parse a JSON-object-shaped string into a nested object — a value like `'{"strict":true,...}'` is sent as a literal string, which GitHub's API rejects (422) since `required_status_checks` must be an actual object. Use bracket field syntax instead (gh's own documented pattern for nested/array fields, e.g. `-F 'files[myfile.txt][content]=@myfile.txt'`):
+
 ```bash
 gh api repos/markusluisflores/markusluisflores.github.io/branches/main/protection \
   --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["build","quality","lighthouse","Analyze code with CodeQL"]}' \
-  --field enforce_admins=true \
-  --field required_pull_request_reviews=null \
-  --field restrictions=null
+  -F "required_status_checks[strict]=true" \
+  -F "required_status_checks[contexts][]=build" \
+  -F "required_status_checks[contexts][]=quality" \
+  -F "required_status_checks[contexts][]=lighthouse" \
+  -F "required_status_checks[contexts][]=Analyze code with CodeQL" \
+  -F "enforce_admins=true" \
+  -F "required_pull_request_reviews=null" \
+  -F "restrictions=null"
 ```
 
 - [ ] **Step 5: Enable repository security settings**
 
 ```bash
-gh api repos/markusluisflores/markusluisflores.github.io --method PATCH --field delete_branch_on_merge=true
+gh api repos/markusluisflores/markusluisflores.github.io --method PATCH -F "delete_branch_on_merge=true"
 
 gh api repos/markusluisflores/markusluisflores.github.io --method PATCH \
-  --field security_and_analysis='{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}'
+  -F "security_and_analysis[secret_scanning][status]=enabled" \
+  -F "security_and_analysis[secret_scanning_push_protection][status]=enabled"
 ```
 
 - [ ] **Step 6: Switch Pages source from legacy branch build to GitHub Actions**
@@ -1246,7 +1368,15 @@ gh api repos/markusluisflores/markusluisflores.github.io/pages --jq '.build_type
 
 Expected: first command lists all 4 contexts from Step 4; second prints `workflow`.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 8: Remove the stale placeholder `index.html`**
+
+The root-level `index.html` ("Hello World!") was the pre-Eleventy placeholder that the legacy branch build served. Now that Pages serves `_site/index.html` via the Actions build (Step 6), the root file is dead weight — remove it:
+
+```bash
+git rm index.html
+```
+
+- [ ] **Step 9: Commit**
 
 ```bash
 git add .github SECURITY.md CONTRIBUTING.md
@@ -1257,13 +1387,16 @@ templates, Dependabot config, SECURITY.md/CONTRIBUTING.md (with
 project-specific placeholders filled in), bug-priority/status/type
 labels, branch protection on main requiring the build/quality/
 lighthouse/CodeQL checks, secret scanning + push protection, and
-auto-delete-merged-branches. Also switches the Pages source from the
+auto-delete-merged-branches. Switches the Pages source from the
 legacy branch build (set up before this implementation existed) to
-the GitHub Actions build deploy.yml now provides.
+the GitHub Actions build deploy.yml now provides, and removes the
+now-dead pre-Eleventy placeholder index.html the legacy build used
+to serve.
 
 Consists of:
 - .github/ISSUE_TEMPLATE/*, pull_request_template.md, dependabot.yml
-- SECURITY.md, CONTRIBUTING.md: project-specific placeholders filled"
+- SECURITY.md, CONTRIBUTING.md: project-specific placeholders filled
+- index.html: removed (superseded by _site/index.html via deploy.yml)"
 ```
 
 ---
