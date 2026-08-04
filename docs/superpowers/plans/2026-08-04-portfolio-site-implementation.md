@@ -767,6 +767,12 @@ section {
   border-bottom: 1px solid var(--border);
 }
 
+#experience,
+#skills,
+#education {
+  scroll-margin-top: 4.5rem;
+}
+
 .timeline {
   list-style: none;
   padding: 0;
@@ -879,8 +885,16 @@ The spec names "mobile-first" as a requirement; the sticky header (3 nav links +
   .hero h1 {
     font-size: 1.875rem;
   }
+
+  #experience,
+  #skills,
+  #education {
+    scroll-margin-top: 6.5rem;
+  }
 }
 ```
+
+Note: the header only actually wraps to two lines at very narrow widths (empirically measured: still single-line, ~62.78px tall, all the way down to 375px; wraps to ~91.78px only at 320px) — but the `scroll-margin-top` override applies across the whole `<= 640px` breakpoint anyway, matching the layout breakpoint it's paired with rather than adding a third, narrower one just for this. That means a little extra (harmless) whitespace above the heading between 375-640px, where the header hasn't visually wrapped yet but the larger offset still applies. Verified via a real headless-browser click-and-measure test at both 1280px and 320px: heading top stays clear of the header bottom by ~40px in both cases, not just barely clearing.
 
 - [ ] **Step 7: Verify Stylelint passes, the build succeeds, and the header doesn't break narrow**
 
@@ -1352,9 +1366,20 @@ cp "~/.claude/skills/github-setup/templates/CONTRIBUTING.md" "CONTRIBUTING.md"
 
 - [ ] **Step 2: Fill in the template placeholders**
 
-Edit `SECURITY.md`: replace `[PROJECT_NAME]` with `markusluisflores.github.io` and `[CONTACT_EMAIL]` with `markuslsflores@gmail.com`.
+The real templates (`~/.claude/skills/github-setup/templates/SECURITY.md` and `CONTRIBUTING.md`) don't actually contain a `[PROJECT_NAME]` placeholder in `SECURITY.md` — only `[CONTACT_EMAIL]`, `[OWNER]`, and `[REPO]`. Every placeholder in both files needs an explicit replacement:
 
-Edit `CONTRIBUTING.md`: replace `[PROJECT_NAME]` with `markusluisflores.github.io`; replace generic dev commands with `npm install`, `npm run serve` (local dev), `npm run build`, `npm run lint`.
+Edit `SECURITY.md`:
+- `[CONTACT_EMAIL]` → `markuslsflores@gmail.com`
+- `[OWNER]` → `markusluisflores`
+- `[REPO]` → `markusluisflores.github.io`
+
+Edit `CONTRIBUTING.md`:
+- `[PROJECT_NAME]` (title, line 1) → `markusluisflores.github.io`
+- `[OWNER]` (git clone URL) → `markusluisflores`
+- `[REPO]` (git clone URL and the `cd` line) → `markusluisflores.github.io`
+- `npm run dev` (Development Setup block) → `npm run serve` — this project's actual script name (Task 1), not the template's generic placeholder command
+- `Write or update tests for any logic changes` (Workflow section, step 2) → `Update resume.json or templates for content/markup changes` — the template's step assumes a project with a test suite; this one has neither logic nor tests to update, found during a full self-sweep after round 4 caught the adjacent step 3 issue but not this one
+- `Run \`npm test\` — all tests must pass before opening a PR` (Workflow section, step 3) → `Run \`npm run lint\` and \`npm run build\` — both must succeed before opening a PR` — this project has no `test` script; per the design spec, there's no unit-test suite (presentational markup driven by data), so the template's generic testing step needs replacing, not just leaving as dead text that errors if anyone actually runs it
 
 Edit `.github/ISSUE_TEMPLATE/config.yml`: replace `[SECURITY_URL]` with `https://github.com/markusluisflores/markusluisflores.github.io/security/policy`.
 
