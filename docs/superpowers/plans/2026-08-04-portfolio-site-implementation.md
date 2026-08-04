@@ -167,7 +167,7 @@ const js = require("@eslint/js");
 module.exports = [
   js.configs.recommended,
   {
-    files: ["src/assets/js/**/*.js", ".eleventy.js"],
+    files: ["src/assets/js/**/*.js", ".eleventy.js", "scripts/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
@@ -432,7 +432,7 @@ Create `src/_layouts/base.njk`:
 ```njk
 {% import "contact-links.njk" as contact %}
 {% set pageTitle = title or (resume.name + " — " + resume.title) %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -444,6 +444,9 @@ Create `src/_layouts/base.njk`:
   <meta property="og:image" content="/assets/og-image.svg">
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
   <script>
     (function () {
@@ -460,7 +463,7 @@ Create `src/_layouts/base.njk`:
       <a href="#skills">Skills</a>
       <a href="#education">Education</a>
     </nav>
-    <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
   </header>
 
   <main>
@@ -472,7 +475,7 @@ Create `src/_layouts/base.njk`:
       {{ contact.contactLinks(resume.links) }}
     </div>
     <a class="download-resume" href="/assets/resume.pdf" download>Download Resume (PDF)</a>
-    <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
   </footer>
 
   <script src="/assets/js/theme-toggle.js"></script>
@@ -481,6 +484,8 @@ Create `src/_layouts/base.njk`:
 ```
 
 Note: the theme-detection `<script>` in `<head>` is deliberately inline and unminified/unbundled — it must run synchronously before first paint to avoid a flash of the wrong theme (per the spec). `theme-toggle.js` (Task 6) is loaded separately at the end of `<body>` and only handles the click interaction.
+
+Note: the Google Fonts `<link>` tags load Space Grotesk and Inter — Task 5's CSS declares these font-family names, but without this `<link>` nothing actually fetches them and every browser silently falls back to `system-ui`. The `preconnect` hints reduce the connection-setup cost since these are the first cross-origin requests the page makes.
 
 - [ ] **Step 3: Replace the placeholder page with real content**
 
@@ -553,9 +558,11 @@ grep -c "Royal Bank of Canada" _site/index.html
 grep -c "data-theme-toggle" _site/index.html
 grep -c "og:image" _site/index.html
 grep -c "contact-link" _site/index.html
+grep -c "fonts.googleapis.com" _site/index.html
+npx html-validate "_site/**/*.html"
 ```
 
-Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggle` returns 2 (header + footer buttons). `contact-link` returns 6 (3 links × 2 places — Hero and footer both call the macro).
+Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggle` returns 2 (header + footer buttons). `contact-link` returns 6 (3 links × 2 places — Hero and footer both call the macro). `html-validate` exits 0 (confirms the uppercase `DOCTYPE` and `type="button"` fixes hold against the real build output, not just the reconstruction this plan was checked against).
 
 - [ ] **Step 5: Commit**
 
@@ -565,13 +572,14 @@ git commit -m "feat: build the resume page from layout and real data
 
 Implements the spec's content sections (Hero, Experience, Skills,
 Education, Footer) as Nunjucks templates consuming resume.json. Head
-metadata (title, description, OG tags, favicon link) lives in the
-shared layout so it doesn't need repeating per page. Theme toggle
-appears in both header and footer as two buttons sharing one
-data-theme-toggle hook, wired up fully in Task 6. Contact links
-(Email, GitHub, LinkedIn) render as icon+text per the spec, via one
-shared macro called from both the Hero and the footer rather than
-duplicated markup.
+metadata (title, description, OG tags, favicon link, Google Fonts
+Space Grotesk/Inter) lives in the shared layout so it doesn't need
+repeating per page. Theme toggle appears in both header and footer as
+two type=\"button\" elements sharing one data-theme-toggle hook, wired
+up fully in Task 6. Contact links (Email, GitHub, LinkedIn) render as
+icon+text per the spec, via one shared macro called from both the
+Hero and the footer rather than duplicated markup. DOCTYPE is
+uppercase per html-validate's default doctype-style rule.
 
 Consists of:
 - src/_includes/contact-links.njk: shared icon+text contact-link macro
@@ -1012,7 +1020,19 @@ Run it once now to generate the file:
 node scripts/generate-og-image.js
 ```
 
-Add a script entry to `package.json` so it re-runs automatically before every build (append `"prebuild": "node scripts/generate-og-image.js"` to the existing `"scripts"` block from Task 1).
+Add a script entry to `package.json` so it re-runs automatically before every build, and widen the `lint` script now that `scripts/` exists (Task 2's ESLint config already covers this path — see Task 2 — but the `lint` script's CLI invocation needs to list it too, or `npx eslint` won't check it). Update the `"scripts"` block from Task 1/2:
+
+```json
+"scripts": {
+  "build": "eleventy",
+  "serve": "eleventy --serve",
+  "lint": "eslint src/assets/js .eleventy.js scripts && stylelint \"src/assets/css/**/*.css\"",
+  "prepare": "husky",
+  "prebuild": "node scripts/generate-og-image.js"
+}
+```
+
+Note: `scripts` couldn't be added to `lint` back in Task 1/2 — at that point in the build order, the `scripts/` directory didn't exist yet, and `eslint` errors out (not just warns) on a path pattern matching zero files. Confirmed empirically: `npx eslint nonexistent-dir` exits with "No files matching the pattern... were found," not a silent no-op.
 
 - [ ] **Step 4: Point Task 4's og:image meta tag at the PNG**
 
@@ -1028,9 +1048,9 @@ to:
 <meta property="og:image" content="/assets/og-image.png">
 ```
 
-- [ ] **Step 5: Copy the real PDF resume**
+- [ ] **Step 5: Copy the real PDF resume — requires human hand-off, not just a checkbox**
 
-The source file's location on disk is a personal path and is deliberately not recorded in this document. Copy the user's existing resume PDF (its path was supplied directly during planning) into `src/assets/resume.pdf`.
+Unlike every other step in this plan, this one cannot be completed by an implementer working from this document alone, zero-context or not — the source file's location on disk is a personal path and is deliberately not recorded here (a real privacy constraint, not a missing detail this plan failed to specify). This is the same category of gap the spec's own "Open inputs needed" section already names for the resume content and font/color choices: something that has to come from the user directly at execution time. Whoever executes this task needs the real path supplied to them in that session before this step can run; if it's missing, stop and ask rather than guessing or skipping. Once supplied, copy the file into `src/assets/resume.pdf`.
 
 - [ ] **Step 6: Verify all assets are copied into the build output**
 
@@ -1077,7 +1097,7 @@ Consists of:
 
 **Interfaces:**
 - Consumes: `npm run build` (Task 1), ESLint/Stylelint configs (Task 2), `src/assets/js`/`src/assets/css` paths (Tasks 5–6).
-- Produces: `_site/` published to GitHub Pages on every push to `main`; PR-blocking checks named `build`, `quality`, `lighthouse`, and CodeQL's `Analyze code with CodeQL` — exact names consumed by Task 9's branch-protection required-checks list.
+- Produces: `_site/` published to GitHub Pages on every push to `main`; PR-blocking checks named `build`, `quality`, `lighthouse`, and CodeQL's check — exact names consumed by Task 9's branch-protection required-checks list. Note: GitHub Actions appends the matrix combination to a matrixed job's check name regardless of the job's static `name:` field, so `codeql.yml`'s `name: Analyze code with CodeQL` job with `matrix.language: [javascript-typescript]` actually reports as `Analyze code with CodeQL (javascript-typescript)` — that full string, not the shorter `name:` value, is what Task 9 must require.
 
 - [ ] **Step 1: Write ci.yml**
 
@@ -1125,7 +1145,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - run: npm ci
-      - run: npx eslint src/assets/js .eleventy.js
+      - run: npx eslint src/assets/js .eleventy.js scripts
       - run: npx stylelint "src/assets/css/**/*.css"
       - run: npm run build
       - run: npx html-validate "_site/**/*.html"
@@ -1235,13 +1255,15 @@ jobs:
 - [ ] **Step 6: Verify ci.yml locally as much as possible before pushing**
 
 ```bash
+npx eslint src/assets/js .eleventy.js scripts
+npx stylelint "src/assets/css/**/*.css"
 npm run build
 npx html-validate "_site/**/*.html"
 npx linkinator _site --recurse --skip "https://www.linkedin.com/*"
 npm audit --audit-level=high
 ```
 
-Expected: all four commands exit 0 (this is everything `ci.yml`'s `quality` job runs, minus the GitHub-Actions-only steps).
+Expected: all six commands exit 0 — this is the full `quality` job from `ci.yml` (eslint and stylelint were already exercised individually in Tasks 2/5/6, but running the complete set together here catches anything that only shows up in combination).
 
 - [ ] **Step 7: Commit**
 
@@ -1335,7 +1357,7 @@ gh api repos/markusluisflores/markusluisflores.github.io/branches/main/protectio
   -F "required_status_checks[contexts][]=build" \
   -F "required_status_checks[contexts][]=quality" \
   -F "required_status_checks[contexts][]=lighthouse" \
-  -F "required_status_checks[contexts][]=Analyze code with CodeQL" \
+  -F "required_status_checks[contexts][]=Analyze code with CodeQL (javascript-typescript)" \
   -F "enforce_admins=true" \
   -F "required_pull_request_reviews=null" \
   -F "restrictions=null"
