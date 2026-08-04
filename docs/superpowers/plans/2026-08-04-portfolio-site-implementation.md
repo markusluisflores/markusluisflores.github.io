@@ -205,6 +205,7 @@ module.exports = [
         document: "readonly",
         window: "readonly",
         localStorage: "readonly",
+        IntersectionObserver: "readonly",
       },
     },
     rules: {
@@ -1000,9 +1001,11 @@ And add the script tag itself, alongside the existing `theme-toggle.js` referenc
 
 - [ ] **Step 9: Verify Stylelint/ESLint pass, the build succeeds, the header doesn't break narrow, and sections actually reveal on scroll**
 
+`scripts/` doesn't exist yet at this point (Task 7 creates it) — same hazard already documented for Task 1/2's `lint` script; don't include it here:
+
 ```bash
 npx stylelint "src/assets/css/**/*.css"
-npx eslint src/assets/js .eleventy.js scripts eslint.config.js
+npx eslint src/assets/js .eleventy.js eslint.config.js
 npm run build
 npm run serve
 ```
