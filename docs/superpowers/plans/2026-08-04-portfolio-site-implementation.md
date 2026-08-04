@@ -50,6 +50,8 @@ Edit `package.json`, replace the `"scripts"` block:
 }
 ```
 
+Note: `npm run lint` is **not runnable yet** at this point — `src/assets/js` and `src/assets/css` don't exist until Tasks 5/6 create them, and both `eslint`/`stylelint` error (not warn) on a path pattern matching zero files. Nothing in Tasks 1-4 invokes `npm run lint`, so this doesn't block anything, but don't try running it early while sanity-checking the scaffold.
+
 - [ ] **Step 3: Create `.eleventy.js`**
 
 ```js
@@ -271,7 +273,10 @@ npx lint-staged
 
 - [ ] **Step 8: Verify the pre-commit hook actually blocks a bad commit**
 
+`src/assets/js/` doesn't exist yet at this point in the build order (Tasks 5/6 create it) — create it first, or this step fails on a missing directory before it even tests anything:
+
 ```bash
+mkdir -p src/assets/js
 echo "const x = 1" > src/assets/js/_tmp-lint-test.js
 git add src/assets/js/_tmp-lint-test.js
 git commit -m "bad commit message"
@@ -282,7 +287,10 @@ Expected: commit-msg hook rejects the message (commitlint `type-enum` failure). 
 ```bash
 git reset
 rm src/assets/js/_tmp-lint-test.js
+rmdir src/assets/js src/assets 2>/dev/null || true
 ```
+
+The trailing `rmdir` cleans up the directory this step created, so it doesn't leave an empty `src/assets/js/` sitting around before Task 5/6 populate it for real — `|| true` because a later task's file (if this step ever runs out of order) would make `rmdir` fail harmlessly on a non-empty directory.
 
 - [ ] **Step 9: Commit**
 
@@ -455,6 +463,7 @@ Create `src/_layouts/base.njk`:
 ```njk
 {% import "contact-links.njk" as contact %}
 {% set pageTitle = title or (resume.name + " — " + resume.title) %}
+{% set siteUrl = "https://markusluisflores.github.io" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -464,7 +473,10 @@ Create `src/_layouts/base.njk`:
   <meta name="description" content="{{ description or resume.tagline }}">
   <meta property="og:title" content="{{ pageTitle }}">
   <meta property="og:description" content="{{ description or resume.tagline }}">
-  <meta property="og:image" content="/assets/og-image.svg">
+  <meta property="og:image" content="{{ siteUrl }}/assets/og-image.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="{{ siteUrl }}/">
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -486,7 +498,7 @@ Create `src/_layouts/base.njk`:
       <a href="#skills">Skills</a>
       <a href="#education">Education</a>
     </nav>
-    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
   </header>
 
   <main>
@@ -498,7 +510,7 @@ Create `src/_layouts/base.njk`:
       {{ contact.contactLinks(resume.links) }}
     </div>
     <a class="download-resume" href="/assets/resume.pdf" download>Download Resume (PDF)</a>
-    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark and light theme">🌓</button>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
   </footer>
 
   <script src="/assets/js/theme-toggle.js"></script>
@@ -509,6 +521,8 @@ Create `src/_layouts/base.njk`:
 Note: the theme-detection `<script>` in `<head>` is deliberately inline and unminified/unbundled — it must run synchronously before first paint to avoid a flash of the wrong theme (per the spec). `theme-toggle.js` (Task 6) is loaded separately at the end of `<body>` and only handles the click interaction.
 
 Note: the Google Fonts `<link>` tags load Space Grotesk and Inter — Task 5's CSS declares these font-family names, but without this `<link>` nothing actually fetches them and every browser silently falls back to `system-ui`. The `preconnect` hints reduce the connection-setup cost since these are the first cross-origin requests the page makes.
+
+Note: `og:image` and `og:url` use the absolute `siteUrl`, not a root-relative path. The [ogp.me spec](https://ogp.me/) requires both `og:image` and `og:url` as absolute URLs — off-site crawlers (LinkedIn, Facebook) fetch `og:image` as a standalone resource, and a relative path is the single most common cause of a social share rendering with no image, which would defeat the entire reason this project has an OG card (per the spec: "a shared link with no OG image/description looks unpolished"). `og:image:width`/`height` match the dimensions Task 7 actually generates (1200×630) and help crawlers render correctly on first scrape without fetching the image first.
 
 - [ ] **Step 3: Replace the placeholder page with real content**
 
@@ -579,13 +593,13 @@ Note: `title`/`description` are deliberately absent from this front matter, not 
 npm run build
 grep -c "Royal Bank of Canada" _site/index.html
 grep -c "data-theme-toggle" _site/index.html
-grep -c "og:image" _site/index.html
+grep -c "og:url" _site/index.html
 grep -c "contact-link" _site/index.html
 grep -c "fonts.googleapis.com" _site/index.html
 npx html-validate "_site/**/*.html"
 ```
 
-Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggle` returns 2 (header + footer buttons). `contact-link` returns 6 (3 links × 2 places — Hero and footer both call the macro). `html-validate` exits 0 (confirms the uppercase `DOCTYPE` and `type="button"` fixes hold against the real build output, not just the reconstruction this plan was checked against).
+Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggle` returns 2 (header + footer buttons). `contact-link` returns 6 (3 links × 2 places — Hero and footer both call the macro). `og:url` returns 1 (confirms the absolute-URL OG fix is present — `og:image`'s own count is no longer a clean single-value check since `og:image:width`/`og:image:height` also contain that substring). `html-validate` exits 0 (confirms the uppercase `DOCTYPE` and `type="button"` fixes hold against the real build output, not just the reconstruction this plan was checked against).
 
 - [ ] **Step 5: Commit**
 
@@ -700,7 +714,7 @@ Append to `style.css`:
 
 .theme-toggle {
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-muted);
   border-radius: 999px;
   padding: 0.4rem 0.6rem;
   cursor: pointer;
@@ -848,6 +862,16 @@ Append to `style.css`:
   font-weight: 600;
 }
 
+.site-nav a:focus-visible,
+.contact-link:focus-visible,
+.theme-toggle:focus-visible,
+.download-resume:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+Note: measured contrast on the accessible-color pairs used in this file — body text, muted text, and accent-on-background all pass WCAG AA comfortably in both themes. Two things automated Lighthouse scoring doesn't catch, fixed here: `.theme-toggle`'s border was `var(--border)` (measured ~1.3:1 against the background in both themes — below the 3:1 WCAG 1.4.11 requires for UI component boundaries), now `var(--text-muted)` instead (measured well above 3:1); and there was no `:focus-visible` styling anywhere, so keyboard users had no visible indicator which link/button was focused (hover-only affordances existed for nav links, contact links, the toggle, and the download button, with no keyboard equivalent).
+
 @media (prefers-reduced-motion: no-preference) {
   section {
     animation: fade-in 0.4s ease-in;
@@ -932,8 +956,8 @@ Consists of:
 - Create: `src/assets/js/theme-toggle.js`
 
 **Interfaces:**
-- Consumes: `[data-theme-toggle]` buttons (Task 4's templates — both header and footer instances), `:root[data-theme]` attribute contract (Task 5's CSS).
-- Produces: click-to-toggle behavior with `localStorage` persistence.
+- Consumes: `[data-theme-toggle]` buttons (Task 4's templates — both header and footer instances, statically marked `aria-pressed="false"`), `:root[data-theme]` attribute contract (Task 5's CSS).
+- Produces: click-to-toggle behavior with `localStorage` persistence, and `aria-pressed` state kept in sync on both buttons — on load (correcting the static markup default against whatever theme the inline head script already applied) and after every click.
 
 - [ ] **Step 1: Write the toggle script**
 
@@ -947,9 +971,17 @@ Create `src/assets/js/theme-toggle.js`:
     return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
   }
 
+  function updateToggleState() {
+    var pressed = currentTheme() === "dark" ? "true" : "false";
+    toggles.forEach(function (button) {
+      button.setAttribute("aria-pressed", pressed);
+    });
+  }
+
   function setTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
+    updateToggleState();
   }
 
   toggles.forEach(function (button) {
@@ -957,8 +989,16 @@ Create `src/assets/js/theme-toggle.js`:
       setTheme(currentTheme() === "dark" ? "light" : "dark");
     });
   });
+
+  // Sync aria-pressed with whatever theme the inline head script already
+  // applied to <html> before this file loaded — the buttons themselves
+  // didn't exist yet when that script ran, so their static aria-pressed="false"
+  // markup attribute needs correcting here if the real theme is "dark".
+  updateToggleState();
 })();
 ```
+
+Note: `aria-pressed` is what exposes the toggle's state to screen readers — clicking it previously changed the visible glyph and the theme but gave no indication via the accessibility tree that anything changed, since the button itself never communicated a state at all. `updateToggleState()` runs both on click and once on load, since the buttons don't exist yet when the inline FOUC-prevention script (Task 4) sets the initial theme on `<html>` — by the time this file loads, the real theme is already applied, but the button's static `aria-pressed="false"` markup may not match it (e.g. if the system preference or a stored choice was actually dark).
 
 - [ ] **Step 2: Verify ESLint passes**
 
@@ -975,7 +1015,7 @@ npm run build
 npm run serve
 ```
 
-Open the printed local URL. Click either theme-toggle button (header or footer): confirm the page switches theme instantly and clicking the *other* button reflects the same state (both read/write the same `data-theme` attribute). Reload the page: confirm the theme choice persisted via `localStorage`. Stop the server (Ctrl+C) when done.
+Open the printed local URL. Click either theme-toggle button (header or footer): confirm the page switches theme instantly and clicking the *other* button reflects the same state (both read/write the same `data-theme` attribute), and both buttons' `aria-pressed` value updates (inspect via devtools). Reload the page: confirm the theme choice persisted via `localStorage` and `aria-pressed` matches on load. Stop the server (Ctrl+C) when done.
 
 - [ ] **Step 4: Commit**
 
@@ -988,10 +1028,13 @@ hook and one localStorage-persisted state, so clicking either updates
 both — matches the spec's 'one logical control, two visual instances'
 requirement. Deliberately separate from base.njk's inline FOUC-
 prevention script (Task 4), which only sets the initial theme before
-first paint.
+first paint. Buttons also expose their state via aria-pressed, synced
+on load and on every click — previously the toggle changed the theme
+with no indication via the accessibility tree that anything happened.
 
 Consists of:
-- src/assets/js/theme-toggle.js: click handler + localStorage sync"
+- src/assets/js/theme-toggle.js: click handler + localStorage sync +
+  aria-pressed state sync"
 ```
 
 ---
@@ -1084,13 +1127,13 @@ Note: `scripts` couldn't be added to `lint` back in Task 1/2 — at that point i
 In `src/_layouts/base.njk` (written in Task 4), change:
 
 ```njk
-<meta property="og:image" content="/assets/og-image.svg">
+<meta property="og:image" content="{{ siteUrl }}/assets/og-image.svg">
 ```
 
 to:
 
 ```njk
-<meta property="og:image" content="/assets/og-image.png">
+<meta property="og:image" content="{{ siteUrl }}/assets/og-image.png">
 ```
 
 - [ ] **Step 5: Copy the real PDF resume — requires human hand-off, not just a checkbox**
@@ -1155,6 +1198,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -1243,11 +1287,23 @@ Create `lighthouserc.json`:
 npm install --save-dev html-validate linkinator @lhci/cli
 ```
 
+`@lhci/cli`'s own dependency tree pulls in a version of `tmp` with a real high-severity advisory (GHSA-52f5-9888-hmc6) — confirmed empirically: `npm audit --audit-level=high` exits 1 on this exact dependency set out of the box, which would permanently fail the `quality` CI job (a required status check per Task 9) starting with the very first push. Force a patched `tmp` version via npm's `overrides` field rather than downgrading `@lhci/cli` (the only alternative `npm audit fix --force` offers is `@lhci/cli@0.1.0`, a breaking downgrade) or skipping dev-dependency auditing entirely (`--omit=dev` would audit nothing at all, since every dependency in this project is a devDependency — that's not a fix, it's turning the check off). Add to `package.json`:
+
+```json
+"overrides": {
+  "tmp": "^0.2.6"
+}
+```
+
+Verified: with this override in place, `npm audit --audit-level=high` exits 0 (two remaining moderate-severity `uuid` advisories stay below the `high` threshold, consistent with the quality baseline's stated policy of starting audits at `high` severity).
+
 - [ ] **Step 4: Copy CodeQL workflow verbatim from github-setup templates**
+
+Use `"$HOME/..."`, not a quoted `"~/..."` — bash does not expand `~` inside double quotes (confirmed empirically: `cp "~/nonexistent"` fails with "No such file or directory" even when the real file exists at that path; `$HOME` expands correctly in both quoted and unquoted form). Every `cp` in this task and Task 9 uses this form for the same reason.
 
 ```bash
 mkdir -p .github/workflows
-cp "~/.claude/skills/github-setup/templates/workflows/codeql.yml" ".github/workflows/codeql.yml"
+cp "$HOME/.claude/skills/github-setup/templates/workflows/codeql.yml" ".github/workflows/codeql.yml"
 ```
 
 - [ ] **Step 5: Write deploy.yml**
@@ -1260,6 +1316,7 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -1355,13 +1412,13 @@ Consists of:
 
 ```bash
 mkdir -p .github/ISSUE_TEMPLATE
-cp "~/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/bug_report.yml" ".github/ISSUE_TEMPLATE/bug_report.yml"
-cp "~/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/feature_request.yml" ".github/ISSUE_TEMPLATE/feature_request.yml"
-cp "~/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/config.yml" ".github/ISSUE_TEMPLATE/config.yml"
-cp "~/.claude/skills/github-setup/templates/pull_request_template.md" ".github/pull_request_template.md"
-cp "~/.claude/skills/github-setup/templates/dependabot.yml" ".github/dependabot.yml"
-cp "~/.claude/skills/github-setup/templates/SECURITY.md" "SECURITY.md"
-cp "~/.claude/skills/github-setup/templates/CONTRIBUTING.md" "CONTRIBUTING.md"
+cp "$HOME/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/bug_report.yml" ".github/ISSUE_TEMPLATE/bug_report.yml"
+cp "$HOME/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/feature_request.yml" ".github/ISSUE_TEMPLATE/feature_request.yml"
+cp "$HOME/.claude/skills/github-setup/templates/ISSUE_TEMPLATE/config.yml" ".github/ISSUE_TEMPLATE/config.yml"
+cp "$HOME/.claude/skills/github-setup/templates/pull_request_template.md" ".github/pull_request_template.md"
+cp "$HOME/.claude/skills/github-setup/templates/dependabot.yml" ".github/dependabot.yml"
+cp "$HOME/.claude/skills/github-setup/templates/SECURITY.md" "SECURITY.md"
+cp "$HOME/.claude/skills/github-setup/templates/CONTRIBUTING.md" "CONTRIBUTING.md"
 ```
 
 - [ ] **Step 2: Fill in the template placeholders**
@@ -1382,6 +1439,8 @@ Edit `CONTRIBUTING.md`:
 - `Run \`npm test\` — all tests must pass before opening a PR` (Workflow section, step 3) → `Run \`npm run lint\` and \`npm run build\` — both must succeed before opening a PR` — this project has no `test` script; per the design spec, there's no unit-test suite (presentational markup driven by data), so the template's generic testing step needs replacing, not just leaving as dead text that errors if anyone actually runs it
 
 Edit `.github/ISSUE_TEMPLATE/config.yml`: replace `[SECURITY_URL]` with `https://github.com/markusluisflores/markusluisflores.github.io/security/policy`.
+
+Edit `.github/pull_request_template.md`: the Checklist section has the same "assumes a test suite" issue as `CONTRIBUTING.md` did — `- [ ] Tests pass (\`npm test\` or equivalent)` isn't broken (the "or equivalent" keeps it non-erroring, it's checklist text a human checks off, not a command), but replace it with `- [ ] \`npm run lint\` and \`npm run build\` pass` for consistency with the actual project.
 
 - [ ] **Step 3: Create GitHub labels**
 
