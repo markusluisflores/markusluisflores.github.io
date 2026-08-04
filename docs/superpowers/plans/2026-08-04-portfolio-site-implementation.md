@@ -869,9 +869,13 @@ Append to `style.css`:
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+```
 
 Note: measured contrast on the accessible-color pairs used in this file — body text, muted text, and accent-on-background all pass WCAG AA comfortably in both themes. Two things automated Lighthouse scoring doesn't catch, fixed here: `.theme-toggle`'s border was `var(--border)` (measured ~1.3:1 against the background in both themes — below the 3:1 WCAG 1.4.11 requires for UI component boundaries), now `var(--text-muted)` instead (measured well above 3:1); and there was no `:focus-visible` styling anywhere, so keyboard users had no visible indicator which link/button was focused (hover-only affordances existed for nav links, contact links, the toggle, and the download button, with no keyboard equivalent).
 
+Continue appending to `style.css`:
+
+```css
 @media (prefers-reduced-motion: no-preference) {
   section {
     animation: fade-in 0.4s ease-in;
