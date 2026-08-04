@@ -1,6 +1,6 @@
 # markusluisflores.github.io
 
-Personal resume/portfolio site, published via GitHub Pages from this repo's `main` branch. Global workflow rules (feature workflow, design process, mandatory skills, conventions) live in `C:\Users\Miko\.claude\CLAUDE.md` and apply here — with the project-specific overrides below.
+Personal resume/portfolio site, published via GitHub Pages from this repo's `main` branch. Global workflow rules (feature workflow, design process, mandatory skills, conventions) live in `~/.claude/CLAUDE.md` and apply here — with the project-specific overrides below.
 
 ## Constraints
 
