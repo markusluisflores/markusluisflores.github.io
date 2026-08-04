@@ -55,6 +55,10 @@ Edit `package.json`, replace the `"scripts"` block:
 ```js
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/assets");
+  eleventyConfig.setNunjucksEnvironmentOptions({
+    trimBlocks: true,
+    lstripBlocks: true,
+  });
 
   return {
     dir: {
@@ -65,6 +69,8 @@ module.exports = function (eleventyConfig) {
   };
 };
 ```
+
+`trimBlocks`/`lstripBlocks` matter later: without them, every `{% for %}`/`{% if %}`/`{% import %}` tag leaves a blank line behind in the rendered HTML (Nunjucks' default whitespace behavior), which html-validate's default `no-trailing-whitespace` rule rejects.
 
 - [ ] **Step 4: Pin the Node version**
 
@@ -167,7 +173,24 @@ const js = require("@eslint/js");
 module.exports = [
   js.configs.recommended,
   {
-    files: ["src/assets/js/**/*.js", ".eleventy.js", "scripts/**/*.js"],
+    files: [".eleventy.js", "scripts/**/*.js", "eslint.config.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "commonjs",
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        __dirname: "readonly",
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
+      "no-console": "warn",
+    },
+  },
+  {
+    files: ["src/assets/js/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
@@ -175,8 +198,6 @@ module.exports = [
         document: "readonly",
         window: "readonly",
         localStorage: "readonly",
-        module: "readonly",
-        require: "readonly",
       },
     },
     rules: {
@@ -185,6 +206,8 @@ module.exports = [
   },
 ];
 ```
+
+Two separate blocks, not one shared one: Node/CommonJS files (`.eleventy.js`, `scripts/**/*.js`, and `eslint.config.js` itself — otherwise the config can't lint itself once it's staged in Step 9's commit) need `require`/`module`/`__dirname`/`process` globals and no browser globals; browser-run files (`src/assets/js/**/*.js`) need the reverse. Mixing them into one globals list would let each file type reference the other's globals without ESLint catching a real mistake (e.g. `document` accidentally used inside a Node script).
 
 - [ ] **Step 4: Write Stylelint and Prettier configs**
 
@@ -494,8 +517,6 @@ Replace `src/index.njk` entirely:
 ```njk
 ---
 layout: base.njk
-title: "Markus Luis Flores — Software Developer"
-description: "Software Developer with 5+ years of experience building and maintaining large-scale SaaS applications."
 ---
 {% import "contact-links.njk" as contact %}
 <section class="hero">
@@ -549,6 +570,8 @@ description: "Software Developer with 5+ years of experience building and mainta
   {% endfor %}
 </section>
 ```
+
+Note: `title`/`description` are deliberately absent from this front matter, not just the `description` line — both would otherwise hand-duplicate `resume.name`/`resume.title`/`resume.tagline`, violating this plan's own Global Constraint ("never hand-duplicated into templates"). `base.njk`'s existing `{{ title or (resume.name + " — " + resume.title) }}` and `{{ description or resume.tagline }}` fallbacks already cover this page entirely; a future page (e.g. Projects) can still override either via its own front matter.
 
 - [ ] **Step 4: Build and verify the real content renders**
 
@@ -613,7 +636,7 @@ Create `src/assets/css/style.css`:
 ```css
 :root {
   --bg: #fdfdfc;
-  --surface: #ffffff;
+  --surface: #fff;
   --text: #1a1a1a;
   --text-muted: #5a5a5a;
   --accent: #a3423b;
@@ -637,14 +660,14 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   line-height: 1.6;
 }
 
 h1,
 h2,
 h3 {
-  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-family: "Space Grotesk", Inter, system-ui, sans-serif;
 }
 ```
 
@@ -774,10 +797,16 @@ section {
 
 .chip {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
   border-radius: 999px;
   padding: 0.3rem 0.75rem;
   font-size: 0.9rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.chip:hover {
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .education-entry {
@@ -837,7 +866,7 @@ Append to `style.css`:
 The spec names "mobile-first" as a requirement; the sticky header (3 nav links + a toggle button in a flex row) is the element most likely to break on a narrow screen. Append to `style.css`:
 
 ```css
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .site-header {
     flex-wrap: wrap;
     row-gap: 0.5rem;
@@ -985,10 +1014,12 @@ Create `src/assets/og-image.svg` (1200×630, the standard OG image dimension):
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#a3423b"/>
-  <text x="80" y="300" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#fdfdfc">Markus Luis Flores</text>
-  <text x="80" y="370" font-family="Arial, sans-serif" font-size="36" fill="#fdfdfc">Software Developer</text>
+  <text x="80" y="300" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="72" font-weight="700" fill="#fdfdfc">Markus Luis Flores</text>
+  <text x="80" y="370" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="36" fill="#fdfdfc">Software Developer</text>
 </svg>
 ```
+
+Note: the font stack leads with `DejaVu Sans`/`Liberation Sans` rather than just `Arial` — this SVG gets rasterized by `sharp` in Step 3, running on GitHub Actions' `ubuntu-latest` runner in Task 8's CI, which typically doesn't have Arial installed; DejaVu Sans and Liberation Sans are commonly preinstalled there, so the rendered PNG doesn't silently fall back to a generic system font. (The favicon in Step 1 keeps `Arial, sans-serif` — it's served directly to browsers, not rasterized at build time, so this concern doesn't apply there.)
 
 - [ ] **Step 3: Rasterize it to PNG**
 
@@ -1167,7 +1198,7 @@ jobs:
       - run: npx @lhci/cli autorun
 ```
 
-Note: `linkinator` skips LinkedIn URLs — LinkedIn blocks automated requests from CI bots (returns non-200 to non-browser clients), which would otherwise cause false-positive failures on a link that works fine for real visitors.
+Note: `linkinator` skips LinkedIn URLs — LinkedIn blocks automated requests from CI bots (returns non-200 to non-browser clients), which would otherwise cause false-positive failures on a link that works fine for real visitors. `--skip` takes a regular expression, not a glob — `https://www.linkedin.com/*` happens to work here since `.` and `*` are valid (if slightly loose) regex syntax against this specific URL shape, but don't read the trailing `*` as glob wildcard syntax if reusing this pattern elsewhere.
 
 - [ ] **Step 2: Write lighthouserc.json**
 
