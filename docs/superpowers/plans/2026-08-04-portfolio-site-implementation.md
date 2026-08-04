@@ -652,7 +652,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `.contact-link` (from the shared macro), `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`).
-- Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` / `:root[data-theme="light"]` selectors, consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly). Also produces the `.is-visible` class contract on `#experience`/`#skills`/`#education` — set by `scroll-reveal.js`, consumed only by this task's own CSS (no other task depends on it).
+- Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` overrides the unqualified `:root` (light is the base state, not a separate `[data-theme="light"]` selector), consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly). Also produces the `.is-visible` class contract on `#experience`/`#skills`/`#education` — set by `scroll-reveal.js`, consumed only by this task's own CSS (no other task depends on it).
 
 Before writing CSS, invoke the `frontend-design` skill (per the global workflow — implementation-time UI code requires it) to validate or refine the typography pairing and accent color proposed below against the "modern & distinctive" direction approved in the spec.
 
@@ -938,7 +938,19 @@ The spec names "mobile-first" as a requirement; the sticky header (3 nav links +
     scroll-margin-top: 6.5rem;
   }
 }
+
+@media print {
+  #experience,
+  #skills,
+  #education {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 ```
+
+Note: the scroll-reveal's `opacity: 0` initial state (added in this task's Step 5) lives inside `@media (prefers-reduced-motion: no-preference)`, which applies under `print` too — `IntersectionObserver` fires against the scrolling viewport, not a print render, so a recruiter hitting Ctrl+P or "Save as PDF" on landing (without having scrolled) would get a document with Skills and Education silently blank. This `@media print` override forces all three visible for print regardless of scroll state. `transition: none` is load-bearing, not decorative — confirmed empirically: without it, opacity measures ~0.003 immediately after switching to print media (the 0.4s transition is still mid-flight), settling to `1` only ~700ms later, which would race an actual print snapshot; with `transition: none`, opacity is `1` immediately.
 
 Note: the header only actually wraps to two lines at very narrow widths (empirically measured: still single-line, ~62.78px tall, all the way down to 375px; wraps to ~91.78px only at 320px) — but the `scroll-margin-top` override applies across the whole `<= 640px` breakpoint anyway, matching the layout breakpoint it's paired with rather than adding a third, narrower one just for this. That means a little extra (harmless) whitespace above the heading between 375-640px, where the header hasn't visually wrapped yet but the larger offset still applies. Verified via a real headless-browser click-and-measure test at both 1280px and 320px: heading top stays clear of the header bottom by ~40px in both cases, not just barely clearing.
 
@@ -1010,12 +1022,11 @@ npm run build
 npm run serve
 ```
 
-Expected: stylelint, eslint, and build all exit 0. With the dev server running: resize down to ~375px width and confirm the header still wraps correctly (Step 6's check, unchanged); scroll down and confirm Experience/Skills/Education each fade in as they enter the viewport, not all at once on load, and the Hero is visible immediately without any fade; disable JavaScript (devtools) and reload — confirm all sections are visible immediately with no permanently-invisible content. Stop the server (Ctrl+C) when done.
+Expected: stylelint, eslint, and build all exit 0. With the dev server running: resize down to ~375px width and confirm the header still wraps correctly (Step 6's check, unchanged); scroll down and confirm Experience/Skills/Education each fade in as they enter the viewport, not all at once on load, and the Hero is visible immediately without any fade; disable JavaScript (devtools) and reload — confirm all sections are visible immediately with no permanently-invisible content; open the browser's print preview (Ctrl+P) immediately after page load, without scrolling first — confirm Experience/Skills/Education all render fully, not blank (this specifically tests the `@media print` override above, since without it a print/PDF-save on landing would silently drop everything the scroll-reveal hadn't triggered yet). Stop the server (Ctrl+C) when done.
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git add src/assets/css/style.css
 git add src/assets/css/style.css src/assets/js/scroll-reveal.js src/_layouts/base.njk
 git commit -m "feat(design): implement the modern/distinctive visual system
 
