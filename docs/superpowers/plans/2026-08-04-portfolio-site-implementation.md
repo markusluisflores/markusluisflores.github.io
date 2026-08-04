@@ -90,7 +90,10 @@ Append to the existing `.gitignore`:
 node_modules/
 _site/
 .cache/
+.lighthouseci/
 ```
+
+`.lighthouseci/` is `@lhci/cli`'s local report/cache directory — not created by anything in this plan's local steps today, but worth having ready before Task 8 introduces it, so reproducing the CI Lighthouse run locally doesn't leave an untracked directory sitting in the repo.
 
 - [ ] **Step 6: Create a temporary placeholder page**
 
@@ -119,7 +122,9 @@ Task 4.
 Consists of:
 - package.json: Eleventy dependency + build/serve scripts
 - .eleventy.js: input/output dirs, layouts dir, asset passthrough
-- src/index.njk: temporary placeholder, replaced in Task 4"
+- src/index.njk: temporary placeholder, replaced in Task 4
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -273,16 +278,16 @@ npx lint-staged
 
 - [ ] **Step 8: Verify the pre-commit hook actually blocks a bad commit**
 
-`src/assets/js/` doesn't exist yet at this point in the build order (Tasks 5/6 create it) — create it first, or this step fails on a missing directory before it even tests anything:
+`src/assets/js/` doesn't exist yet at this point in the build order (Tasks 5/6 create it) — create it first, or this step fails on a missing directory before it even tests anything. The test file must also be lint-clean: `git` runs `pre-commit` (ESLint) *before* `commit-msg` (commitlint), so a lint error never reaches commitlint at all — confirmed empirically: `const x = 1` trips `no-unused-vars` and the commit is blocked by ESLint, not by the commit-message check this step is actually trying to verify. The commit message also needs an invalid *type*, specifically, to trigger `type-enum` — a message with no `type:` prefix at all (like "bad commit message") triggers `subject-empty`/`type-empty` instead, a different rule than what this step originally claimed:
 
 ```bash
 mkdir -p src/assets/js
-echo "const x = 1" > src/assets/js/_tmp-lint-test.js
+echo "window.themeTest = 1;" > src/assets/js/_tmp-lint-test.js
 git add src/assets/js/_tmp-lint-test.js
-git commit -m "bad commit message"
+git commit -m "wip: something"
 ```
 
-Expected: commit-msg hook rejects the message (commitlint `type-enum` failure). Then:
+Expected: pre-commit passes (the file is lint-clean), then the commit-msg hook rejects the message with a `type-enum` failure — confirmed empirically: `type must be one of [feat, fix, ci, refactor, test, docs, chore, perf, style, migration]`. Then:
 
 ```bash
 git reset
@@ -309,7 +314,9 @@ Consists of:
 - .husky/pre-commit: gitleaks + lint-staged
 - .husky/commit-msg: commitlint
 - eslint.config.js, .stylelintrc.json, .prettierrc: linter/formatter config
-- commitlint.config.mjs: enforces git-commit-standard.md's type-enum"
+- commitlint.config.mjs: enforces git-commit-standard.md's type-enum
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -354,7 +361,7 @@ Create `src/_data/resume.json`:
     {
       "role": "Software Engineer",
       "company": "Infor PSSC, Inc.",
-      "dates": "Dec 2018 – June 2023",
+      "dates": "Dec 2018 – Jun 2023",
       "bullets": [
         "Designed and developed new features and enhancements for Infor's SaaS Human Capital Management (HCM) platform based on business requirements.",
         "Maintained and improved existing HCM modules using Agile and object-oriented programming (OOP) practices.",
@@ -378,14 +385,14 @@ Create `src/_data/resume.json`:
       "degree": "Diploma in Software Development",
       "school": "Southern Alberta Institute of Technology (SAIT)",
       "location": "Calgary, Alberta",
-      "dates": "Sept 2023 – April 2025",
+      "dates": "Sep 2023 – Apr 2025",
       "note": "With Honours"
     },
     {
       "degree": "Bachelor of Science in Information Technology",
       "school": "De La Salle University",
       "location": "Manila, Philippines",
-      "dates": "May 2014 – August 2018",
+      "dates": "May 2014 – Aug 2018",
       "note": "5x Dean's Lister"
     }
   ]
@@ -415,7 +422,9 @@ section cheap (a sibling projects.json, per the design spec).
 
 Consists of:
 - src/_data/resume.json: name/title/tagline, links, 2 experience
-  entries, 6 skill categories, 2 education entries"
+  entries, 6 skill categories, 2 education entries
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -589,7 +598,10 @@ Note: `title`/`description` are deliberately absent from this front matter, not 
 
 - [ ] **Step 4: Build and verify the real content renders**
 
+`html-validate` is used here for the first time, before Task 8 installs the rest of the CI-only tooling — install it now as a devDependency rather than relying on `npx` to auto-fetch an unpinned version from the network on every run:
+
 ```bash
+npm install --save-dev html-validate
 npm run build
 grep -c "Royal Bank of Canada" _site/index.html
 grep -c "data-theme-toggle" _site/index.html
@@ -604,7 +616,7 @@ Expected: build exits 0; each `grep -c` returns a count ≥ 1. `data-theme-toggl
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/_includes/contact-links.njk src/_layouts/base.njk src/index.njk
+git add src/_includes/contact-links.njk src/_layouts/base.njk src/index.njk package.json package-lock.json
 git commit -m "feat: build the resume page from layout and real data
 
 Implements the spec's content sections (Hero, Experience, Skills,
@@ -623,7 +635,9 @@ Consists of:
 - src/_layouts/base.njk: head metadata, nav, header/footer, FOUC-safe
   inline theme-detection script
 - src/index.njk: Hero/Experience/Skills/Education sections, replaces
-  Task 1's placeholder"
+  Task 1's placeholder
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -632,10 +646,12 @@ Consists of:
 
 **Files:**
 - Create: `src/assets/css/style.css`
+- Create: `src/assets/js/scroll-reveal.js`
+- Modify: `src/_layouts/base.njk` (written in Task 4) — adds the `scroll-reveal.js` script tag and a `<noscript>` fallback
 
 **Interfaces:**
 - Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `.contact-link` (from the shared macro), `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`).
-- Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` / `:root[data-theme="light"]` selectors, consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly).
+- Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` / `:root[data-theme="light"]` selectors, consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly). Also produces the `.is-visible` class contract on `#experience`/`#skills`/`#education` — set by `scroll-reveal.js`, consumed only by this task's own CSS (no other task depends on it).
 
 Before writing CSS, invoke the `frontend-design` skill (per the global workflow — implementation-time UI code requires it) to validate or refine the typography pairing and accent color proposed below against the "modern & distinctive" direction approved in the spec.
 
@@ -877,23 +893,24 @@ Continue appending to `style.css`:
 
 ```css
 @media (prefers-reduced-motion: no-preference) {
-  section {
-    animation: fade-in 0.4s ease-in;
+  #experience,
+  #skills,
+  #education {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease-in, transform 0.4s ease-in;
   }
 
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  #experience.is-visible,
+  #skills.is-visible,
+  #education.is-visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 ```
+
+Note: the spec calls for "fade-in on section entry" — i.e. triggered by scrolling a section into view, not a one-time page-load animation on every section simultaneously (the original `@keyframes`/`animation` approach here didn't actually do that; it faded every section in at once on load, nothing happened on scroll at all). This CSS only sets up the two states (hidden/`.is-visible`) and the transition between them; `scroll-reveal.js` (a new file, Step 7 below) does the actual scroll-triggered class toggling via `IntersectionObserver`. Scoped to `#experience`/`#skills`/`#education` only, not `.hero` — the hero is above the fold on load, so a scroll-triggered reveal doesn't apply to it; it should just be visible immediately.
 
 - [ ] **Step 6: Add narrow-viewport styling**
 
@@ -924,32 +941,109 @@ The spec names "mobile-first" as a requirement; the sticky header (3 nav links +
 
 Note: the header only actually wraps to two lines at very narrow widths (empirically measured: still single-line, ~62.78px tall, all the way down to 375px; wraps to ~91.78px only at 320px) — but the `scroll-margin-top` override applies across the whole `<= 640px` breakpoint anyway, matching the layout breakpoint it's paired with rather than adding a third, narrower one just for this. That means a little extra (harmless) whitespace above the heading between 375-640px, where the header hasn't visually wrapped yet but the larger offset still applies. Verified via a real headless-browser click-and-measure test at both 1280px and 320px: heading top stays clear of the header bottom by ~40px in both cases, not just barely clearing.
 
-- [ ] **Step 7: Verify Stylelint passes, the build succeeds, and the header doesn't break narrow**
+- [ ] **Step 7: Create the scroll-reveal script**
+
+Create `src/assets/js/scroll-reveal.js`:
+
+```js
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  var sections = document.querySelectorAll("#experience, #skills, #education");
+
+  if (!("IntersectionObserver" in window)) {
+    sections.forEach(function (section) {
+      section.classList.add("is-visible");
+    });
+    return;
+  }
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  sections.forEach(function (section) {
+    observer.observe(section);
+  });
+})();
+```
+
+Three fallback paths, each deliberate: if `prefers-reduced-motion: reduce` is set, skip entirely (the CSS's `opacity: 0` initial state only applies inside the `no-preference` media query, so sections are already visible by default — nothing to reveal). If `IntersectionObserver` isn't supported, mark everything visible immediately rather than leaving sections permanently hidden. `unobserve` after the first trigger — this is a one-time reveal per section, not a repeat-on-every-scroll-past animation.
+
+- [ ] **Step 8: Add a no-JS fallback so sections aren't stuck invisible**
+
+In `src/_layouts/base.njk` (Task 4), the reduced-motion CSS's `opacity: 0` initial state depends on `scroll-reveal.js` actually running to reveal it — a visitor with JavaScript disabled would see `#experience`/`#skills`/`#education` permanently invisible, since nothing ever adds `.is-visible`. Add a `<noscript>` override right after the `<link rel="stylesheet" href="/assets/css/style.css">` line:
+
+```njk
+<noscript>
+  <style>
+    #experience, #skills, #education { opacity: 1 !important; transform: none !important; }
+  </style>
+</noscript>
+```
+
+And add the script tag itself, alongside the existing `theme-toggle.js` reference at the end of `<body>`:
+
+```njk
+<script src="/assets/js/scroll-reveal.js"></script>
+```
+
+- [ ] **Step 9: Verify Stylelint/ESLint pass, the build succeeds, the header doesn't break narrow, and sections actually reveal on scroll**
 
 ```bash
 npx stylelint "src/assets/css/**/*.css"
+npx eslint src/assets/js .eleventy.js scripts eslint.config.js
 npm run build
 npm run serve
 ```
 
-Expected: stylelint and build both exit 0. With the dev server running, open the local URL and resize the browser (or use devtools' device toolbar) down to ~375px width: confirm the header's nav links and theme toggle wrap onto a second line rather than overlapping or clipping, and the hero heading doesn't overflow horizontally. Stop the server (Ctrl+C) when done.
+Expected: stylelint, eslint, and build all exit 0. With the dev server running: resize down to ~375px width and confirm the header still wraps correctly (Step 6's check, unchanged); scroll down and confirm Experience/Skills/Education each fade in as they enter the viewport, not all at once on load, and the Hero is visible immediately without any fade; disable JavaScript (devtools) and reload — confirm all sections are visible immediately with no permanently-invisible content. Stop the server (Ctrl+C) when done.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add src/assets/css/style.css
+git add src/assets/css/style.css src/assets/js/scroll-reveal.js src/_layouts/base.njk
 git commit -m "feat(design): implement the modern/distinctive visual system
 
 Space Grotesk + Inter type pairing, a single terracotta accent color
 (light/dark variants), CSS custom properties driving the data-theme
 attribute contract Task 6's JS toggles. Sticky header, timeline-styled
-experience entries, chip-styled skills, reduced-motion-respecting
-fade-in transitions, and a narrow-viewport breakpoint for the header —
-matching the spec's Visual design system and mobile-first
-requirements. No CSS framework, hand-written throughout.
+experience entries, chip-styled skills, and a narrow-viewport
+breakpoint for the header — matching the spec's Visual design system
+and mobile-first requirements. No CSS framework, hand-written
+throughout.
+
+Experience/Skills/Education fade in as each is scrolled into view
+(IntersectionObserver, one-time per section), matching the spec's
+'fade-in on section entry' requirement — the original CSS-only
+@keyframes approach faded every section in simultaneously on page
+load instead, which wasn't actually scroll-triggered. Respects
+prefers-reduced-motion (skips the effect entirely, sections render
+visible immediately) and degrades gracefully with JS disabled (a
+<noscript> override in base.njk) or without IntersectionObserver
+support. The Hero stays immediately visible — it's above the fold on
+load, so a scroll reveal doesn't apply to it.
 
 Consists of:
-- src/assets/css/style.css: full theme system and page styling"
+- src/assets/css/style.css: full theme system, page styling, and the
+  hidden/.is-visible states scroll-reveal.js toggles
+- src/assets/js/scroll-reveal.js: IntersectionObserver-based
+  scroll-triggered fade-in for Experience/Skills/Education
+- src/_layouts/base.njk: adds the scroll-reveal.js script tag and a
+  noscript fallback so sections aren't stuck invisible without JS
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -1038,7 +1132,9 @@ with no indication via the accessibility tree that anything happened.
 
 Consists of:
 - src/assets/js/theme-toggle.js: click handler + localStorage sync +
-  aria-pressed state sync"
+  aria-pressed state sync
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -1118,7 +1214,7 @@ Add a script entry to `package.json` so it re-runs automatically before every bu
 "scripts": {
   "build": "eleventy",
   "serve": "eleventy --serve",
-  "lint": "eslint src/assets/js .eleventy.js scripts && stylelint \"src/assets/css/**/*.css\"",
+  "lint": "eslint src/assets/js .eleventy.js scripts eslint.config.js && stylelint \"src/assets/css/**/*.css\"",
   "prepare": "husky",
   "prebuild": "node scripts/generate-og-image.js"
 }
@@ -1174,7 +1270,9 @@ Consists of:
 - src/assets/og-image.png: rasterized version actually referenced by og:image
 - scripts/generate-og-image.js: sharp-based SVG-to-PNG conversion, run via a prebuild script
 - src/_layouts/base.njk: og:image meta tag repointed at the .png
-- src/assets/resume.pdf: real downloadable resume"
+- src/assets/resume.pdf: real downloadable resume
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -1223,10 +1321,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: _site
 
   quality:
     name: quality
@@ -1238,11 +1332,11 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - run: npm ci
-      - run: npx eslint src/assets/js .eleventy.js scripts
+      - run: npx eslint src/assets/js .eleventy.js scripts eslint.config.js
       - run: npx stylelint "src/assets/css/**/*.css"
       - run: npm run build
       - run: npx html-validate "_site/**/*.html"
-      - run: npx linkinator _site --recurse --skip "https://www.linkedin.com/*"
+      - run: npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
       - run: npm audit --audit-level=high
 
   lighthouse:
@@ -1261,6 +1355,10 @@ jobs:
 ```
 
 Note: `linkinator` skips LinkedIn URLs — LinkedIn blocks automated requests from CI bots (returns non-200 to non-browser clients), which would otherwise cause false-positive failures on a link that works fine for real visitors. `--skip` takes a regular expression, not a glob — `https://www.linkedin.com/*` happens to work here since `.` and `*` are valid (if slightly loose) regex syntax against this specific URL shape, but don't read the trailing `*` as glob wildcard syntax if reusing this pattern elsewhere.
+
+A second skip is required for a different reason: `linkinator` resolves any URL that parses as absolute (including `og:image`/`og:url`'s meta tag values, which the ogp.me fix earlier in this plan deliberately made absolute) by actually fetching it — from the **live site**, not from the local `_site/` build. Before the first deploy, `https://markusluisflores.github.io/assets/og-image.png` 404s (nothing's been deployed yet), which would permanently fail this required CI check on the very first PR — a genuine chicken-and-egg deadlock, confirmed empirically (`[404]` on the live URL, exit 1 without the skip; exit 0 with it). `--skip "^https://markusluisflores.github.io/"` treats the site's own absolute URLs as already-covered by the local build/render checks (html-validate, the grep assertions) rather than re-fetching them externally.
+
+Note: the `build` job doesn't upload `_site/` as an artifact — nothing downloads it (the `lighthouse` job re-runs its own `npm ci` + `npm run build` rather than consuming an upload, since it needs the full `node_modules` context to run `@lhci/cli` anyway, not just the built output). An unused `upload-artifact` step was cut rather than wiring up a consumer for a few seconds of build-time savings that isn't worth the added YAML complexity.
 
 - [ ] **Step 2: Write lighthouserc.json**
 
@@ -1285,10 +1383,12 @@ Create `lighthouserc.json`:
 }
 ```
 
-- [ ] **Step 3: Install the CI-only tooling used by the workflow**
+- [ ] **Step 3: Install the remaining CI-only tooling used by the workflow**
+
+`html-validate` was already installed in Task 4 (needed there first) — just the remaining two:
 
 ```bash
-npm install --save-dev html-validate linkinator @lhci/cli
+npm install --save-dev linkinator @lhci/cli
 ```
 
 `@lhci/cli`'s own dependency tree pulls in a version of `tmp` with a real high-severity advisory (GHSA-52f5-9888-hmc6) — confirmed empirically: `npm audit --audit-level=high` exits 1 on this exact dependency set out of the box, which would permanently fail the `quality` CI job (a required status check per Task 9) starting with the very first push. Force a patched `tmp` version via npm's `overrides` field rather than downgrading `@lhci/cli` (the only alternative `npm audit fix --force` offers is `@lhci/cli@0.1.0`, a breaking downgrade) or skipping dev-dependency auditing entirely (`--omit=dev` would audit nothing at all, since every dependency in this project is a devDependency — that's not a fix, it's turning the check off). Add to `package.json`:
@@ -1361,11 +1461,11 @@ jobs:
 - [ ] **Step 6: Verify ci.yml locally as much as possible before pushing**
 
 ```bash
-npx eslint src/assets/js .eleventy.js scripts
+npx eslint src/assets/js .eleventy.js scripts eslint.config.js
 npx stylelint "src/assets/css/**/*.css"
 npm run build
 npx html-validate "_site/**/*.html"
-npx linkinator _site --recurse --skip "https://www.linkedin.com/*"
+npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
 npm audit --audit-level=high
 ```
 
@@ -1393,7 +1493,9 @@ Consists of:
 - .github/workflows/ci.yml: build + quality + lighthouse jobs
 - .github/workflows/codeql.yml: copied verbatim from github-setup
 - .github/workflows/deploy.yml: Eleventy build -> Pages deploy
-- lighthouserc.json: accessibility >= 0.9 assertion"
+- lighthouserc.json: accessibility >= 0.9 assertion
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
@@ -1537,7 +1639,9 @@ to serve.
 Consists of:
 - .github/ISSUE_TEMPLATE/*, pull_request_template.md, dependabot.yml
 - SECURITY.md, CONTRIBUTING.md: project-specific placeholders filled
-- index.html: removed (superseded by _site/index.html via deploy.yml)"
+- index.html: removed (superseded by _site/index.html via deploy.yml)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 ---
