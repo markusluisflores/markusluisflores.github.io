@@ -692,7 +692,7 @@ Create `src/_layouts/base.njk`:
     <div class="footer-links">
       {{ contact.contactLinks(resume.links) }}
     </div>
-    <a class="download-resume" href="/assets/resume.pdf" download>Download Resume (PDF)</a>
+    <a class="download-resume" href="/assets/resume.pdf" download target="_blank" rel="noopener noreferrer">Download Resume (PDF)</a>
     <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
   </footer>
 
@@ -733,7 +733,7 @@ layout: base.njk
   <div class="hero-links">
     {{ contact.contactLinks(resume.links) }}
   </div>
-  <a class="download-resume" href="/assets/resume.pdf" download>Download Resume (PDF)</a>
+  <a class="download-resume" href="/assets/resume.pdf" download target="_blank" rel="noopener noreferrer">Download Resume (PDF)</a>
 </div>
 
 <section id="experience" class="experience">
@@ -790,6 +790,8 @@ Note: **the identity block is a `<div class="hero">`, not a `<section>`.** Task 
 Note: **`hero-title` and `hero-location` are two elements**, not the single `{{ title }} . {{ location }}` string an earlier draft used. In Task 5's sidebar layout they stack as two short lines in a 21rem column, where one centre-dotted line would wrap badly.
 
 Note: **the identity block carries its own `Download Resume (PDF)` link, and the footer keeps one too.** Both point at the same asset, exactly like the two theme-toggle instances — on desktop the sidebar copy is the one that stays permanently reachable, while the footer copy is what a mobile visitor reaches at the end of the page.
+
+Unlike the contact links, this CTA is **not** a shared macro, so the two instances are edited independently and can drift. Both carry `download` *and* `target="_blank" rel="noopener noreferrer"`. The `download` attribute alone is enough in conforming browsers — they save the file rather than navigating — but iOS Safari has historically ignored `download` for same-origin PDFs and opened them in place, which would take the visitor off the resume. `target="_blank"` covers that case; the two attributes are complementary, not redundant. The `rel` is carried here for the same reason it is on the external links: the rule this project follows is that *every* `target="_blank"` gets one, which is trivially checkable, rather than deciding per anchor whether the destination happens to be trustworthy today.
 
 Note: `.timeline-entry` carries `data-company`. Task 5's `skill-filter.js` reads it to say *where* the matches are ("2 matches in Infor PSSC, Inc.") rather than just how many, so the wording follows the data instead of hardcoding company names.
 
