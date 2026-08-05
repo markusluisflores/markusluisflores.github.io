@@ -206,6 +206,7 @@ module.exports = [
         window: "readonly",
         localStorage: "readonly",
         IntersectionObserver: "readonly",
+        ResizeObserver: "readonly",
       },
     },
     rules: {
@@ -215,7 +216,7 @@ module.exports = [
 ];
 ```
 
-Two separate blocks, not one shared one: Node/CommonJS files (`.eleventy.js`, `scripts/**/*.js`, and `eslint.config.js` itself — otherwise the config can't lint itself once it's staged in Step 9's commit) need `require`/`module`/`__dirname`/`process` globals and no browser globals; browser-run files (`src/assets/js/**/*.js`) need the reverse. Mixing them into one globals list would let each file type reference the other's globals without ESLint catching a real mistake (e.g. `document` accidentally used inside a Node script).
+Two separate blocks, not one shared one: Node/CommonJS files (`.eleventy.js`, `scripts/**/*.js`, and `eslint.config.js` itself — otherwise the config can't lint itself once it's staged in Step 9's commit) need `require`/`module`/`__dirname`/`process` globals and no browser globals; browser-run files (`src/assets/js/**/*.js`) need the reverse. Mixing them into one globals list would let each file type reference the other's globals without ESLint catching a real mistake (e.g. `document` accidentally used inside a Node script). `ResizeObserver` is in the browser list because Task 5's `skill-filter.js` uses it to keep the sticky-chrome offset in sync with the filter bar's actual height; without it declared here, `npx eslint` fails that file on `no-undef`.
 
 - [ ] **Step 4: Write Stylelint and Prettier configs**
 
@@ -338,7 +339,7 @@ Create `src/_data/resume.json`:
 {
   "name": "Markus Luis Flores",
   "title": "Software Developer",
-  "tagline": "Software Developer with 5+ years of experience building and maintaining large-scale SaaS applications — from full-stack feature development to test automation and quality engineering.",
+  "tagline": "Software Developer with more than 5 years of experience developing and maintaining large-scale SaaS applications, from full-stack work to quality engineering. Writes clean, efficient code and designs business-oriented software that caters to the needs of the user.",
   "location": "Calgary, Alberta, Canada",
   "links": {
     "email": "markuslsflores@gmail.com",
@@ -363,15 +364,15 @@ Create `src/_data/resume.json`:
           "skills": ["ConformIQ", "Hexawise", "Copilot"]
         },
         {
-          "text": "Automate and maintain regression suites using Selenium and internal testing tools.",
-          "skills": ["Selenium"]
+          "text": "Automate and maintain regression suites using Playwright and internal testing tools.",
+          "skills": ["Playwright"]
         },
         {
           "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
           "skills": ["Jira", "qTest"]
         },
         {
-          "text": "Support QA environment deployments on Red Hat OpenShift via GitHub Actions and UrbanCode Deploy — validating successful rollouts and verifying pod health and logs post-deployment.",
+          "text": "Support QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy. Validate successful rollouts and check pod health and logs after each deployment.",
           "skills": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         }
       ]
@@ -420,8 +421,8 @@ Create `src/_data/resume.json`:
     {
       "category": "Testing",
       "items": [
-        "Selenium",
         "Playwright",
+        "Selenium",
         "Postman",
         "qTest",
         "Business Logic Testing (BLT)",
@@ -475,9 +476,9 @@ Two rules govern the tags, and both matter more than they look:
 | RBC 1 — "comprehensive test strategies and technical solutions" | *(none)* | No named technology |
 | RBC 2 — "Collaborate in Agile ceremonies" | Agile Scrum Methodology | **Stated** — "Agile ceremonies" |
 | RBC 3 — "model-based design tools (ConformIQ, Hexawise)... AI-assisted design with Copilot" | ConformIQ, Hexawise, Copilot | **Stated** — all three named in the rewritten bullet |
-| RBC 4 — "regression suites using Selenium" | Selenium | **Stated** |
+| RBC 4 — "regression suites using Playwright and internal testing tools" | Playwright | **Stated** — Playwright is the automation tool in use. The unnamed internal framework is believed to sit on Selenium underneath, but it is a distinct spreadsheet-style tool and is left as the generic phrase rather than tagged |
 | RBC 5 — "test execution and defect triage" | Jira, qTest | **Owner-confirmed** — Jira for defect triage, qTest for test-execution tracking, with qTest results linked into Jira |
-| RBC 6 — "QA environment deployments on Red Hat OpenShift via GitHub Actions and UrbanCode Deploy" | Red Hat OpenShift, GitHub Actions, UrbanCode Deploy | **Stated** — all three named in the rewritten bullet |
+| RBC 6 — "QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy" | Red Hat OpenShift, GitHub Actions, UrbanCode Deploy | **Stated** — all three named in the rewritten bullet |
 | Infor 1 — "new features... for Infor's SaaS HCM platform" | Landmark Pattern Language (LPL) | **Owner-confirmed, independently verified** — LPL is Infor's documented proprietary language for this platform |
 | Infor 2 — "using Agile and object-oriented programming (OOP) practices" | Agile Scrum Methodology, Landmark Pattern Language (LPL) | **Stated** (Agile) / **Owner-confirmed** (LPL, which is itself an OOP language — a closer fit to "OOP practices" than the Java this originally guessed) |
 | Infor 3 — "AccuRev and Git" | Git, AccuRev | **Stated** — both named |
@@ -489,11 +490,13 @@ Two rules govern the tags, and both matter more than they look:
 
 **RBC 3's text was also rewritten rather than retagged.** It is a test-*design* bullet, not a test-execution one, so Selenium never belonged on it — the original "leveraging automation frameworks" wording invited exactly the wrong inference. The replacement names the model-based design tools actually used (ConformIQ, Hexawise) and the more recent AI-assisted design work with Copilot driven by Jira requirements. Selenium remains tagged on RBC 4, where the bullet does name it.
 
-This tagging makes **14 of the 42 skills evidenced** — Agile Scrum Methodology, ConformIQ, Hexawise, Copilot, Selenium, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev — leaving **28 as inert chips**. 10 of the 12 bullets carry at least one tag.
+This tagging makes **14 of the 42 skills evidenced** — Agile Scrum Methodology, ConformIQ, Hexawise, Copilot, Playwright, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev — leaving **28 as inert chips**. 10 of the 12 bullets carry at least one tag.
+
+**`Selenium` is deliberately inert.** No bullet tags it: RBC automates with Playwright, RBC 3 is a test-*design* bullet, and Infor 6 used BLT. The owner still has real Selenium exposure through the unnamed internal framework, so it stays in the Testing list as an honest, unclickable chip. `Playwright` is listed first in that category because it is the current primary tool.
 
 **`Copilot` is tagged; `Claude Code`, `Cursor` and `n8n` deliberately are not.** Copilot is the only AI tool used in the professional work described here; the other three are personal-project tools and stay inert. This is also the only tag that points into the AI Tools category, which makes it the check that `isEvidenced` matches a skill by exact string regardless of which category it lives in — verified against a real build rather than assumed.
 
-Only **one** skill, Agile Scrum Methodology, spans both roles; the other thirteen are scoped to a single job. That matters for Task 5's "hollow node" state, and both directions are reachable: filtering by LPL, BLT, Git or AccuRev hollows the RBC entry, and filtering by Selenium, ConformIQ, Hexawise, Copilot, Jira, qTest or any of the three DevOps tools hollows the Infor entry. Confirmed by recounting the data rather than estimating.
+Only **one** skill, Agile Scrum Methodology, spans both roles; the other thirteen are scoped to a single job. That matters for Task 5's "hollow node" state, and both directions are reachable: filtering by LPL, BLT, Git or AccuRev hollows the RBC entry, and filtering by Playwright, ConformIQ, Hexawise, Copilot, Jira, qTest or any of the three DevOps tools hollows the Infor entry. Confirmed by recounting the data rather than estimating.
 
 - [ ] **Step 2: Verify it's valid JSON and Eleventy picks it up**
 
@@ -524,7 +527,7 @@ items, and soft skills are deliberately untagged.
 
 Consists of:
 - src/_data/resume.json: name/title/tagline, links, 2 experience
-  entries with per-bullet skill tags, 6 skill categories, 2 education
+  entries with per-bullet skill tags, 7 skill categories, 2 education
   entries
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -593,7 +596,7 @@ module.exports = function (eleventyConfig) {
 };
 ```
 
-The `WeakMap` cache is keyed on the `experience` array itself, so the set is built once per build rather than once per chip (34 chips x 12 bullets otherwise). `evidencedSkillSet` tolerates a missing or malformed `experience` value by returning an empty set — every chip then renders inert, which degrades the feature rather than failing the build.
+The `WeakMap` cache is keyed on the `experience` array itself, so the set is built once per build rather than once per chip (42 chips x 12 bullets otherwise). `evidencedSkillSet` tolerates a missing or malformed `experience` value by returning an empty set — every chip then renders inert, which degrades the feature rather than failing the build.
 
 - [ ] **Step 2: Write the shared contact-links macro**
 
@@ -735,7 +738,7 @@ layout: base.njk
   <h2>Experience</h2>
   <ol class="timeline">
     {% for job in resume.experience %}
-    <li class="timeline-entry">
+    <li class="timeline-entry" data-company="{{ job.company }}">
       <h3>{{ job.role }}</h3>
       <p class="timeline-meta">{{ job.company }} · {{ job.dates }}</p>
       <ul>
@@ -785,6 +788,8 @@ Note: **the identity block is a `<div class="hero">`, not a `<section>`.** Task 
 Note: **`hero-title` and `hero-location` are two elements**, not the single `{{ title }} . {{ location }}` string an earlier draft used. In Task 5's sidebar layout they stack as two short lines in a 21rem column, where one centre-dotted line would wrap badly.
 
 Note: **the identity block carries its own `Download Resume (PDF)` link, and the footer keeps one too.** Both point at the same asset, exactly like the two theme-toggle instances — on desktop the sidebar copy is the one that stays permanently reachable, while the footer copy is what a mobile visitor reaches at the end of the page.
+
+Note: `.timeline-entry` carries `data-company`. Task 5's `skill-filter.js` reads it to say *where* the matches are ("2 matches in Infor PSSC, Inc.") rather than just how many, so the wording follows the data instead of hardcoding company names.
 
 Note: the bullet loop emits `data-skills="A|B"` **only when the bullet has tags** — pipe-separated because a skill name can contain spaces and commas would be ambiguous. The chip loop asks `isEvidenced` (Step 1) which element to render: a `<button>` carrying `data-skill` and `aria-pressed="false"` for skills with bullet evidence, a plain `<span>` otherwise. Both carry `class="chip"`, so Task 5 styles them identically at rest and splits only on interactivity. **The consequence worth stating plainly: a skill nobody can click is a skill with nothing to show, so the interaction can never lead to a dead end.**
 
@@ -872,7 +877,7 @@ Before writing CSS, invoke the `frontend-design` skill (per the global workflow 
 
 **Layout: sticky identity sidebar, page scroll.** At >=68rem wide *and* >=40rem tall, `main` becomes a two-column grid — a sticky `.hero` column (name, title, location, tagline, contact links, download CTA) beside a column carrying Experience/Skills/Education. Below either threshold it is the untouched single-column mobile stack. Two deliberate rejections: there is **no nested `overflow-y: auto` scroll pane** (the sidebar is `position: sticky` inside normal page scroll, so Ctrl+F, print, scroll restoration and keyboard scrolling all behave natively), and **no tabbed sections** (tabs would hide resume content behind a click, break Ctrl+F across the whole document, and give one repeated panel-swap animation instead of a content-level interaction).
 
-**Signature interaction: Skills cross-filters Experience.** Clicking a skill chip highlights the Experience bullets that skill is tagged against and dims the rest. It answers a question a hiring manager actually has ("where did they use Selenium?") at the sentence level, rather than being decorative motion. The emphasis is carried by the *match* (the neutral bullet tick turns amber and grows from 0.6rem x 1px to 0.95rem x 2px), not by crushing the misses (`opacity: 0.5`, still readable) — which is what keeps it quiet and sidesteps a contrast complaint about the dimmed text. An entry with no matches gets a hollow timeline node.
+**Signature interaction: Skills cross-filters Experience.** Clicking a skill chip highlights the Experience bullets that skill is tagged against and dims the rest. It answers a question a hiring manager actually has ("where did they use Playwright?") at the sentence level, rather than being decorative motion. The emphasis is carried by the *match* (the neutral bullet tick turns amber and grows from 0.6rem x 1px to 0.95rem x 2px), not by crushing the misses (`opacity: 0.5`, still readable) — which is what keeps it quiet and sidesteps a contrast complaint about the dimmed text. An entry with no matches gets a hollow timeline node.
 
 **Nav motion.** Anchor clicks scroll smoothly (`scroll-behavior: smooth`, inside a `prefers-reduced-motion: no-preference` query), and a scroll-spy marks the section currently in view with `aria-current="location"`, which scales a 1px amber underline in from the left under that nav link. Under reduced motion the scroll is an instant jump and the underline appears with no transition — but the spy still marks the current section, because *which section you are in* is information, not animation.
 
@@ -1077,14 +1082,6 @@ Append to `style.css`:
   display: none;
 }
 
-/*
- * While the filter bar is showing it adds a second sticky layer, so every
- * offset measured against the header has to grow by the bar's height.
- */
-body:has([data-filter-bar]:not([hidden])) {
-  --chrome-h: 6rem;
-}
-
 .filter-summary,
 .filter-count {
   margin: 0;
@@ -1120,9 +1117,11 @@ This is the strip that appears under the sticky header while a filter is active.
 
 `.filter-bar[hidden] { display: none }` is load-bearing, not redundant. The bar is `display: flex`, and an explicit `display` value overrides the `hidden` attribute's UA default of `display: none` — without this rule the "hidden" bar renders as an empty amber strip on every page load.
 
-**`body:has([data-filter-bar]:not([hidden])) { --chrome-h: 6rem }` fixes a real collision, and it is the least obvious rule in this file.** The bar is a *second* sticky layer: while it is showing, the total sticky chrome is the header plus the bar (measured 95.4px), not the header alone (56px). Everything that positions itself below the chrome — the sticky sidebar's `top` and `max-height` (Step 11), and the sections' `scroll-margin-top` (Step 5) — is written against `--chrome-h` rather than `--header-h` so that all of it shifts together the moment the bar appears. Without this, confirmed empirically at both 1400x900 and 1200x800: the bar covered the sticky sidebar by 7.4px and **hid the "Experience" section heading by 23px** — and it did so specifically after clicking a chip, because that is exactly when the bar appears and the page scrolls to Experience. The bug was therefore invisible in the resting state and guaranteed in the interaction path this task exists to build. With the rule, the sidebar clears the bar by 32.6px and the heading by 17.0px.
+**The filter bar is a *second* sticky layer, and its height is variable.** Everything that positions itself below the sticky chrome — the sidebar's `top` and `max-height` (Step 11), and the `scroll-margin-top` on both sections (Step 5) and timeline entries (Step 6) — is written against `--chrome-h` rather than `--header-h`, so all of it shifts together the moment the bar appears. `--chrome-h` defaults to the header's height in Step 2 and is **measured and rewritten at runtime by `skill-filter.js`** (Step 14).
 
-Two properties of this approach worth keeping if it is ever rewritten: it needs no JavaScript (the `hidden` attribute stays the single source of truth, so there is no second flag to drift), and it degrades safely — a browser without `:has()` support falls back to the old overlap rather than to a broken layout. `:has()` has been supported across all current engines since 2023.
+**It has to be measured, not hardcoded, and this is worth stating plainly because a constant looks perfectly adequate right up until it isn't.** An earlier version of this task set `--chrome-h: 6rem` from a fixed rule, sized against a bar holding one or two chips. But the bar is `flex-wrap: wrap` and the filter is multi-select across 14 evidenced chips, so its height grows with the number of active chips and shrinks as the viewport widens. Measured on the real page: the bar is **67px with 3 chips active, 87px with 5, and 108px with all 14**. Against the old 96px constant, three or more active chips below the sidebar breakpoint put the bar's real bottom edge **21-46px past** where the headings had been offset to, and the heading sat behind it — reproducible at 768px, 900px and 1000px, and invisible at wider viewports because more chips fit per row there.
+
+The runtime measurement removes the whole class of bug rather than re-tuning the constant: `--chrome-h` is always `header.offsetHeight + (bar.hidden ? 0 : bar.offsetHeight)`, kept current by a `ResizeObserver` on both elements. Verified across a 3x3 matrix (768/900/1000px x 3/5/14 active chips): no section heading is ever covered, with the tightest clearance at 15.3px.
 
 `.filter-clear` is styled from a real `<button>` rather than a link because it performs an action rather than navigating; `font: inherit` is needed because buttons don't inherit typography.
 
@@ -1289,6 +1288,7 @@ Append to `style.css`:
   flex-direction: column;
   padding: 0 0 2.75rem 1.6rem;
   border-left: 1px solid var(--border);
+  scroll-margin-top: calc(var(--chrome-h) + 1.5rem);
 }
 
 .timeline-entry:last-child {
@@ -1359,6 +1359,8 @@ The bullet lists are the highest-content-density part of the page, so they get a
 `order: -1` on `.timeline-meta` puts company and dates above the role without touching Task 4's markup — the flex container reorders them visually while the DOM keeps the role first. This is safe here specifically because neither element is focusable, so there is no tab-order/visual-order mismatch (WCAG 2.4.3 is unaffected), and both sequences are meaningful readings of a resume entry (WCAG 1.3.2). It would **not** be safe on a group containing links or buttons.
 
 The `transition` declarations on `li` and `li::before` are what make the cross-filter fade rather than snap; they are declared here, on the resting state, so both directions of the transition are covered.
+
+`.timeline-entry` carries its own `scroll-margin-top` because Step 14 scrolls to an *entry*, not to a section — the section-level offset in Step 5 would not apply. Like every other chrome-relative offset in this file it is expressed against `--chrome-h`, so it tracks the filter bar's real height.
 
 - [ ] **Step 7: Style the cross-filter states**
 
@@ -1688,7 +1690,7 @@ Append to `style.css`:
 
 **`grid-template-rows: repeat(3, auto)` is deliberate and is a maintenance hazard worth naming.** The sidebar spans the full height of the content column via `grid-row: 1 / -1`, and `-1` resolves against the **explicit** grid. Declaring the three rows explicitly is what guarantees the span reaches the bottom of Education. Confirmed empirically in Chromium that the sticky column also survives *without* this declaration (implicit tracks happen to satisfy `-1` there) — but that is engine-dependent behaviour, and the explicit form is the spec-guaranteed one. **If a Projects section is ever added, this count must go to 4**, or the sidebar will silently stop sticking partway down the new section. Measured with it in place at 1400x900: the hero pins at `top: 88px` and stays there through maximum scroll (`scrollY = 1449`), rather than scrolling away.
 
-The sidebar's `top` and `max-height` are written against `--chrome-h`, not `--header-h`, so both shift down automatically while the filter bar is showing — see Step 4 for why that matters and what it looked like when it was wrong.
+The sidebar's `top` and `max-height` are written against `--chrome-h`, not `--header-h`, so both shift down automatically while the filter bar is showing, by however much the bar actually measures — see Step 4 for why that value has to be measured rather than assumed.
 
 The header and filter bar get a **different** padding expression inside this query than the one from Step 3 — once the sidebar exists, the content is centred on `sidebar + gap + measure`, not on `measure` alone, so the Step 3 expression would leave the nav orphaned from the column it navigates.
 
@@ -1811,18 +1813,31 @@ Create `src/assets/js/skill-filter.js`:
   var chips = Array.prototype.slice.call(document.querySelectorAll("button.chip[data-skill]"));
   var bullets = Array.prototype.slice.call(document.querySelectorAll(".timeline-entry ul li"));
   var entries = Array.prototype.slice.call(document.querySelectorAll(".timeline-entry"));
+  var header = document.querySelector(".site-header");
   var bar = document.querySelector("[data-filter-bar]");
   var skillsLabel = document.querySelector("[data-filter-skills]");
   var countLabel = document.querySelector("[data-filter-count]");
   var clearButton = document.querySelector("[data-filter-clear]");
   var status = document.querySelector("[data-filter-status]");
-  var experience = document.getElementById("experience");
+  var root = document.documentElement;
 
   if (!chips.length || !bullets.length || !bar) {
     return;
   }
 
   var active = [];
+
+  // The filter bar is a second sticky layer and it wraps, so its height depends
+  // on how many chips are active and how wide the viewport is. Measure it rather
+  // than assume: --chrome-h drives the sidebar's offset and every section's and
+  // entry's scroll-margin-top, and a stale value hides headings behind the bar.
+  function chromeHeight() {
+    return (header ? header.offsetHeight : 0) + (bar.hidden ? 0 : bar.offsetHeight);
+  }
+
+  function syncChrome() {
+    root.style.setProperty("--chrome-h", chromeHeight() + "px");
+  }
 
   function skillsOf(li) {
     var raw = li.getAttribute("data-skills");
@@ -1858,23 +1873,49 @@ Create `src/assets/js/skill-filter.js`:
         entry.classList.remove("is-zero-match");
         return;
       }
-      var hasMatch = !!entry.querySelector("li.is-match");
-      entry.classList.toggle("is-zero-match", !hasMatch);
+      entry.classList.toggle("is-zero-match", !entry.querySelector("li.is-match"));
     });
 
     return matched;
   }
 
+  function matchedCompanies() {
+    var names = [];
+    entries.forEach(function (entry) {
+      if (!entry.querySelector("li.is-match")) {
+        return;
+      }
+      var name = entry.getAttribute("data-company");
+      if (name && names.indexOf(name) === -1) {
+        names.push(name);
+      }
+    });
+    return names;
+  }
+
+  function joinNames(names) {
+    if (names.length < 2) {
+      return names[0] || "";
+    }
+    return names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+  }
+
+  function summarise(matched) {
+    var where = joinNames(matchedCompanies());
+    return matched + (matched === 1 ? " match" : " matches") + (where ? " in " + where : "");
+  }
+
   function announce(matched) {
     if (!active.length) {
       bar.hidden = true;
+      syncChrome();
       if (status) {
         status.textContent = "Filter cleared. Showing all " + bullets.length + " bullets.";
       }
       return;
     }
     var names = active.join(", ");
-    var summary = matched + " of " + bullets.length + " bullets highlighted";
+    var summary = summarise(matched);
     bar.hidden = false;
     if (skillsLabel) {
       skillsLabel.textContent = names;
@@ -1882,6 +1923,7 @@ Create `src/assets/js/skill-filter.js`:
     if (countLabel) {
       countLabel.textContent = summary;
     }
+    syncChrome();
     if (status) {
       status.textContent = "Filtering Experience by " + names + ". " + summary + ".";
     }
@@ -1897,6 +1939,26 @@ Create `src/assets/js/skill-filter.js`:
       chip.setAttribute("aria-pressed", "false");
     });
     commit();
+  }
+
+  // Scroll to the first matching bullet's entry, not to the top of Experience.
+  // Filtering by a skill that only appears in the lower entry used to land the
+  // reader on the upper one, which by then is fully dimmed with a hollow node —
+  // all of the negative signal and none of the positive.
+  function revealFirstMatch() {
+    var li = document.querySelector(".timeline-entry li.is-match");
+    if (!li) {
+      return;
+    }
+    var box = li.getBoundingClientRect();
+    if (box.top >= chromeHeight() && box.bottom <= window.innerHeight) {
+      return;
+    }
+    var entry = li.closest(".timeline-entry") || li;
+    entry.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
   }
 
   chips.forEach(function (chip) {
@@ -1915,7 +1977,6 @@ Create `src/assets/js/skill-filter.js`:
     });
 
     chip.addEventListener("click", function () {
-      var wasEmpty = active.length === 0;
       if (isActive(skill)) {
         active = active.filter(function (name) {
           return name !== skill;
@@ -1926,12 +1987,8 @@ Create `src/assets/js/skill-filter.js`:
         chip.setAttribute("aria-pressed", "true");
       }
       commit();
-      if (wasEmpty && active.length && experience) {
-        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        experience.scrollIntoView({
-          behavior: reduced ? "auto" : "smooth",
-          block: "start",
-        });
+      if (active.length) {
+        revealFirstMatch();
       }
     });
   });
@@ -1945,6 +2002,18 @@ Create `src/assets/js/skill-filter.js`:
       clearAll();
     }
   });
+
+  if (typeof ResizeObserver === "function") {
+    var observer = new ResizeObserver(syncChrome);
+    observer.observe(bar);
+    if (header) {
+      observer.observe(header);
+    }
+  } else {
+    window.addEventListener("resize", syncChrome);
+  }
+
+  syncChrome();
 })();
 ```
 
@@ -1954,7 +2023,13 @@ Create `src/assets/js/skill-filter.js`:
 
 **Hover previews only when nothing is committed.** `paint(previewSkill)` renders a transient state without touching `active`, `aria-pressed`, the filter bar or the live region — so a mouse user gets a free look at what a chip would do, while a touch or keyboard user (who cannot hover) loses nothing but the preview. Once a filter is committed, previews are suppressed, so hovering another chip can never appear to silently change a filter the visitor deliberately set.
 
-**The first activation scrolls to Experience.** Because Skills is below Experience, committing a filter would otherwise change only content that is off-screen above, and the interaction would appear to do nothing. The scroll fires only on the empty -> non-empty transition, so toggling further chips doesn't yank the page around, and it honours `prefers-reduced-motion` by jumping instantly instead of gliding.
+**`revealFirstMatch()` scrolls to the first matching bullet's entry, not to the top of Experience — and this distinction is the whole point.** Scrolling to the section looked correct and tested fine, because with a skill that matches the first entry the two land in the same place. It fails on exactly the case the feature is for: filtering by a skill that only appears in the *lower* entry scrolled the reader to the top of Experience, where the upper entry was by then fully dimmed with a hollow node. The reader was shown all of the negative signal and none of the positive, with the highlighted bullets below the fold. Scrolling to the matched entry puts the amber ticks on screen instead.
+
+**It also skips the scroll entirely when the first match is already visible**, measured against the live chrome height rather than the viewport top, so filtering something already on screen doesn't lurch the page.
+
+**The status text names where the matches are, not just how many.** "2 matches in Infor PSSC, Inc." answers the question a bare count leaves open, and it is what makes the interaction legible even when a match is off-screen. `matchedCompanies()` reads `data-company` off each entry that contains a match (Task 4 emits it), so the wording follows the data rather than hardcoding company names. Both the visible bar and the live region use the same sentence.
+
+**`syncChrome()` is why the filter bar can wrap freely.** It writes `--chrome-h` as the measured header plus bar height on every state change, and a `ResizeObserver` on both elements keeps it current through viewport resizes and chip toggles. A `window.resize` listener stands in where `ResizeObserver` is unavailable. See Step 4 for the bug this replaced.
 
 **Escape clears from anywhere**, which is the keyboard equivalent of the bar's Clear button and means a visitor can always get back to the unfiltered resume without hunting for the pressed chip.
 
@@ -1978,7 +2053,11 @@ Expected: all five exit 0. With the dev server running, verify each of the follo
 
 **Sidebar.** At a wide, tall window (at least 1120x640), confirm the identity column sits left and stays pinned while Experience/Skills/Education scroll past it — scroll all the way to the bottom of Education and confirm the sidebar is *still* on screen, not scrolled away. Then shorten the window to under ~640px tall and confirm the layout drops to a single column with everything scrolling normally. Then narrow to 375px and confirm no horizontal scrollbar appears.
 
-**Cross-filter.** Hover a chip with a border (e.g. Selenium) without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the page scrolls to Experience, the amber filter bar appears reading "1 of 12 bullets highlighted", and the chip stays visibly active. Click a second chip (e.g. Landmark Pattern Language (LPL)): the count rises to 3 rather than dropping to zero — that confirms OR, not AND, and with those two together neither job is hollow. Click Selenium again to release it: LPL alone matches only Infor, so the RBC entry's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm a chip with no border (e.g. Postman, Trello, Java, Docker) is not clickable and shows no pointer cursor.
+**Cross-filter.** Hover a chip with a border (e.g. Playwright) without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the amber filter bar appears reading "1 match in Royal Bank of Canada (RBC)", and the chip stays visibly active. Click a second chip (e.g. Landmark Pattern Language (LPL)): the count rises to 3 rather than dropping to zero — that confirms OR, not AND — and the bar now names both companies. Click Playwright again to release it: LPL alone matches only Infor, so the RBC entry's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm a chip with no border (e.g. Postman, Trello, Java, Docker, Selenium) is not clickable and shows no pointer cursor.
+
+**Scroll target.** From the top of the page, click a skill that only matches the *lower* Experience entry (Landmark Pattern Language (LPL) or Business Logic Testing (BLT)). The page must land on the Infor entry with its amber-ticked bullets visible below the sticky chrome — **not** on the top of Experience showing the dimmed, hollow-noded RBC entry. Then, with those bullets already on screen, click another chip: the page must not jump.
+
+**Wrapped filter bar.** Narrow the window to ~900px (below the sidebar breakpoint) and activate 5 or more chips so the filter bar wraps to two or three lines. Click each nav link in turn: every section heading must land clear of the bar, not behind it. This is the case a fixed `--chrome-h` got wrong.
 
 **Keyboard and screen reader.** Tab to a chip and press Enter — it must activate exactly as a click does. Inspect the chip in devtools and confirm `aria-pressed` flips `false` to `true`. Confirm the `[data-filter-status]` paragraph's text content updates to a full sentence naming the skill and the counts. **Lighthouse will not catch a broken `aria-pressed` or a live region that never fires**, so this check is not covered by the CI gate in Task 8 and has to be done by eye here.
 
@@ -2145,14 +2224,14 @@ Create `src/assets/favicon.svg`:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#b5762a"/>
+  <rect width="32" height="32" rx="6" fill="#915e22"/>
   <text x="16" y="22" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">MF</text>
 </svg>
 ```
 
 SVG favicons are broadly supported by browsers, so no rasterization needed here — unlike the OG image below, which specifically needs to work with social-platform crawlers.
 
-Note: `#b5762a` is Task 5's `--accent` and `#ffffff` its `--accent-contrast`, hardcoded here because an SVG asset can't read the page's CSS custom properties. These two literals (and the same pair in Step 2's OG image) are the *only* places the accent color is duplicated outside `style.css` — if the accent is ever changed, these are the files that must change with it, or the favicon and social card will silently keep rendering the old brand color.
+Note: `#915e22` is Task 5's `--accent-strong` and `#ffffff` its `--accent-contrast`, hardcoded here because an SVG asset can't read the page's CSS custom properties. **It is deliberately `--accent-strong` and not the decorative `--accent` (`#b5762a`).** Both assets render white text directly on that fill, and white on `#b5762a` measures 3.76:1 — the same ratio Task 5's own CTA note calls a failure, which is why the download button uses `--accent-strong` too. White on `#915e22` measures 5.49:1. The rule that `--accent` is never used behind text has to hold in the generated assets as well as in the stylesheet, or the principle is only half true. These two literals (and the same pair in Step 2's OG image) are the *only* places the accent color is duplicated outside `style.css` — if the accent is ever changed, these are the files that must change with it, or the favicon and social card will silently keep rendering the old brand color.
 
 - [ ] **Step 2: Create the OG share-card source image**
 
@@ -2160,7 +2239,7 @@ Create `src/assets/og-image.svg` (1200×630, the standard OG image dimension):
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#b5762a"/>
+  <rect width="1200" height="630" fill="#915e22"/>
   <text x="80" y="300" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Markus Luis Flores</text>
   <text x="80" y="370" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="36" fill="#ffffff">Software Developer</text>
 </svg>
