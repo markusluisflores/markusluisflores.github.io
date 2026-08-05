@@ -491,7 +491,7 @@ Create `src/_layouts/base.njk`:
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
   <script>
     (function () {
@@ -530,7 +530,9 @@ Create `src/_layouts/base.njk`:
 
 Note: the theme-detection `<script>` in `<head>` is deliberately inline and unminified/unbundled — it must run synchronously before first paint to avoid a flash of the wrong theme (per the spec). `theme-toggle.js` (Task 6) is loaded separately at the end of `<body>` and only handles the click interaction.
 
-Note: the Google Fonts `<link>` tags load Space Grotesk and Inter — Task 5's CSS declares these font-family names, but without this `<link>` nothing actually fetches them and every browser silently falls back to `system-ui`. The `preconnect` hints reduce the connection-setup cost since these are the first cross-origin requests the page makes.
+Note: the Google Fonts `<link>` tags load Space Grotesk, Inter, and IBM Plex Mono — Task 5's CSS declares these font-family names, but without this `<link>` nothing actually fetches them and every browser silently falls back to `system-ui`/`monospace`. The `preconnect` hints reduce the connection-setup cost since these are the first cross-origin requests the page makes.
+
+IBM Plex Mono is the third family in the pairing, not decoration: Task 5's visual system sets every *label* on the page in it (nav, section headings, skill categories, dates, tags, the download CTA) as a distinct utility register, separate from the display face (names/roles) and the body face (prose). A system-monospace stack (`ui-monospace`/Consolas/Menlo/SF Mono) was considered instead, to avoid the extra font request — rejected because that register carries a lot of visual weight here and its glyph widths and personality would change per operating system, which undermines the point of a site whose job is being a controlled taste signal. The stack in Task 5's `--font-mono` still lists those system faces as fallbacks, so a blocked Google Fonts request degrades to a reasonable monospace rather than to the body face.
 
 Note: `og:image` and `og:url` use the absolute `siteUrl`, not a root-relative path. The [ogp.me spec](https://ogp.me/) requires both `og:image` and `og:url` as absolute URLs — off-site crawlers (LinkedIn, Facebook) fetch `og:image` as a standalone resource, and a relative path is the single most common cause of a social share rendering with no image, which would defeat the entire reason this project has an OG card (per the spec: "a shared link with no OG image/description looks unpolished"). `og:image:width`/`height` match the dimensions Task 7 actually generates (1200×630) and help crawlers render correctly on first scrape without fetching the image first.
 
@@ -651,14 +653,36 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Modify: `src/_layouts/base.njk` (written in Task 4) — adds the `scroll-reveal.js` script tag and a `<noscript>` fallback
 
 **Interfaces:**
-- Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `.contact-link` (from the shared macro), `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`).
+- Consumes: the class names and `id`s from Task 4's templates (`.site-header`, `.site-nav`, `.theme-toggle`, `.hero`, `.hero-title`, `.hero-tagline`, `.hero-links`, `.contact-link` **and the `<span>` inside it** (from the shared macro — the label underline is styled on that span so the inline SVG icon isn't underlined), `#experience .timeline`, `.timeline-entry`, `.timeline-meta`, `#skills .skill-group`, `.skill-chips`, `.chip`, `#education .education-entry`, `.education-note`, `.site-footer`, `.footer-links`, `.download-resume`). Also consumes the *document order* inside `.timeline-entry` (`h3`, then `.timeline-meta`, then `ul`) — Step 5 flips the first two visually with `order`, which only works against that exact order.
 - Produces: the `data-theme` attribute contract — `:root[data-theme="dark"]` overrides the unqualified `:root` (light is the base state, not a separate `[data-theme="light"]` selector), consumed by Task 6's JS (which only ever toggles the attribute value, never touches CSS directly). Also produces the `.is-visible` class contract on `#experience`/`#skills`/`#education` — set by `scroll-reveal.js`, consumed only by this task's own CSS (no other task depends on it).
 
-Before writing CSS, invoke the `frontend-design` skill (per the global workflow — implementation-time UI code requires it) to validate or refine the typography pairing and accent color proposed below against the "modern & distinctive" direction approved in the spec.
+Before writing CSS, invoke the `frontend-design` skill (per the global workflow — implementation-time UI code requires it). It has already been run once for this task and its output is recorded as the design direction in Step 1; re-invoke it if any of those decisions are being changed.
 
-- [ ] **Step 1: Invoke frontend-design to confirm/refine the palette and type pairing**
+- [ ] **Step 1: The design direction (already run through `frontend-design`)**
 
-Proposed starting point (confirm or adjust via the skill): display font **Space Grotesk** paired with body font **Inter**; one accent color, a warm terracotta (`#a3423b` light / `#e08a7d` dark) rather than a default blue, consistent with the spec's "one deliberate accent color" requirement.
+The spec asks for "modern & distinctive" specifically because the paper resume already covers safe/minimal — this site is the taste signal. The direction below is what the whole of Task 5 implements; the individual rules in Steps 2–8 are only meaningful as expressions of it.
+
+**Direction: instrument panel.** The subject is a quality engineer — the craft is measurement, coverage, and verification. The page borrows that vocabulary rather than generic-portfolio vocabulary: a calibrated rail down the Experience entries, tick markers instead of bullet discs, and a monospace *label register* applied to everything that labels rather than states.
+
+**Color.** Cool tinted paper in light (`#eaedf2`) rather than white or cream, with genuinely raised white surfaces on top of it; deep ink in dark (`#0f1116`) with a lifted surface. One accent — a saturated indigo (`#4a35c9` light / `#a79bff` dark).
+
+Two things this deliberately moves *away* from, both flagged by the `frontend-design` skill's own calibration notes as things AI-generated design clusters on regardless of subject: a warm cream ground with a terracotta accent (which is what this plan originally proposed — `#fdfdfc` + `#a3423b` — and is the single most recognizable "generated portfolio" palette), and a near-black page with one acid-green or vermilion accent. The cool-slate ground is also the change that makes `--surface` do real work: at `#fdfdfc`/`#fff` the surface token measured **1.018:1** against the background, i.e. invisible, so it existed in the token list without ever appearing on screen. It now measures **1.174:1** — still a quiet elevation step rather than a contrast boundary, which is the point, but a visible one.
+
+**Type — three registers, not two.**
+
+| Register | Face | Used for |
+|---|---|---|
+| Display | Space Grotesk 600/700, tight tracking | The name, job roles, degrees |
+| Body | Inter 400 | Tagline and Experience bullets — the prose |
+| Label | IBM Plex Mono 400/500, uppercase, wide tracking | Nav, section headings, skill categories, dates/company, tags, the download CTA, the honours note |
+
+The label register is what the original CSS lacked entirely, and its absence is why that version measured only five distinct font sizes across the whole page with everything sitting one step below the hero. It also fixes a real hierarchy inversion: "Experience" (an `h2`) was set larger and heavier than "SDET – Quality Engineer" (an `h3`), so the section *label* outranked the job title it labels. Section headings are now the smallest text on the page and the roles are the largest thing below the hero — which is the correct reading order for a resume.
+
+**Accent budget.** The accent appears exactly six times at rest: the hero rule, two timeline nodes, two honours tags, and the download CTA. Everything else that used to be accent-colored — ~136 chip borders, every timeline border, the hero's full-width rule, nav and contact link resting states — is now a neutral hairline, with the accent reserved for hover, focus, and those six marks. This satisfies the spec's "used consistently for the hero accent, links, and skill-chip highlights" through *state* (links and chips turn accent on hover/focus) rather than through resting color, which is what an accent is for.
+
+**Geometry.** One radius (`4px`) on everything — tags, CTA, toggle. The original mixed `999px` pills throughout; squared-off tags read as tokens, which suits the subject and is the clearest single signal that this isn't the default rounded-pill portfolio. The spec's wording ("tag/pill chips") permits either.
+
+**Signature.** The Experience rail: a hairline with a filled accent node at each entry, dates set in mono as an eyebrow *above* the role, and bullets marked with a short horizontal tick that echoes the rail. The section carrying the most content is also the one carrying the design idea — rather than the design living in the chrome and the content being left as browser defaults, which is exactly what the original did.
 
 - [ ] **Step 2: Write the CSS custom-property theme system**
 
@@ -666,21 +690,35 @@ Create `src/assets/css/style.css`:
 
 ```css
 :root {
-  --bg: #fdfdfc;
+  --measure: 45rem;
+  --gutter: 1.5rem;
+  --radius: 4px;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --bg: #eaedf2;
   --surface: #fff;
-  --text: #1a1a1a;
-  --text-muted: #5a5a5a;
-  --accent: #a3423b;
-  --border: #e5e2dd;
+  --text: #14161b;
+  --text-muted: #565d6b;
+  --border: #d7dbe3;
+  --border-strong: #7d8697;
+  --accent: #4a35c9;
+  --accent-hover: #3826a4;
+  --accent-soft: #e3e0f9;
+  --accent-contrast: #fff;
 }
 
 :root[data-theme="dark"] {
-  --bg: #16171a;
-  --surface: #1e2024;
-  --text: #f2f1ee;
-  --text-muted: #a6a6a6;
-  --accent: #e08a7d;
-  --border: #2c2e33;
+  --bg: #0f1116;
+  --surface: #171a21;
+  --text: #e9ebf0;
+  --text-muted: #98a0af;
+  --border: #262a33;
+  --border-strong: #6d7482;
+  --accent: #a79bff;
+  --accent-hover: #bdb3ff;
+  --accent-soft: #221f3d;
+  --accent-contrast: #0f1116;
 }
 
 * {
@@ -691,16 +729,21 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, system-ui, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.6;
 }
 
 h1,
 h2,
 h3 {
-  font-family: "Space Grotesk", Inter, system-ui, sans-serif;
+  font-family: var(--font-display);
 }
+
 ```
+
+Note on the token set. `--measure` and `--gutter` exist because the content column's width is now needed in three places (`main`, the sticky header's padding, the footer) and they must agree exactly or the header/content misalignment this redesign fixes comes straight back the next time one of them is nudged. `--border-strong` is separate from `--border` because they serve different rules: `--border` is decorative hairlines (section rules, tag outlines) with no contrast floor, while `--border-strong` is for anything WCAG 1.4.11 governs (the theme-toggle's boundary) plus the contact-link underlines — both measured above 3:1 against every surface they sit on, in both themes. `--accent-soft`/`--accent-contrast`/`--accent-hover` exist so the accent has a usable *tonal range* rather than one flat value: the honours notes sit on the soft tint, the CTA label sits on the solid fill, and hover darkens (light) or lightens (dark).
+
+Note on the font names being quoted. `"Inter"`, `"Menlo"`, `"Consolas"` are quoted even though they're single words and don't need to be in plain CSS. Stylelint's `value-keyword-case` rule exempts the `font-family` *property*, but these values live inside custom properties, where it has no way to know they're font names and flags them as mis-cased keywords. Confirmed empirically — unquoted, `npx stylelint` fails with `Expected "Inter" to be "inter"`. Quoting is the fix that keeps them working as font names; lowercasing them would break the match against the actual font.
 
 - [ ] **Step 3: Style the header, nav, and theme toggle**
 
@@ -710,19 +753,29 @@ Append to `style.css`:
 .site-header {
   position: sticky;
   top: 0;
+  z-index: 10;
   display: flex;
+  gap: 1rem;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: var(--bg);
+  padding: 0.7rem calc(max(0px, (100% - var(--measure)) / 2) + var(--gutter));
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
-  z-index: 10;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
 }
 
 .site-nav a {
-  color: var(--text);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   text-decoration: none;
-  margin-right: 1.25rem;
+  transition: color 0.15s ease;
 }
 
 .site-nav a:hover {
@@ -730,72 +783,61 @@ Append to `style.css`:
 }
 
 .theme-toggle {
+  padding: 0.3rem 0.5rem;
   background: none;
-  border: 1px solid var(--text-muted);
-  border-radius: 999px;
-  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  line-height: 1;
   cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
 .theme-toggle:hover {
   border-color: var(--accent);
 }
+
 ```
 
-- [ ] **Step 4: Style the hero, sections, and content**
+The `padding` expression is the fix for the header/content misalignment, and it's the whole reason `--measure` is a token. The header stays full-bleed — it's sticky chrome and its background should span the viewport — but its *contents* are inset to exactly where `main`'s content starts. `100%` in a padding value resolves against the containing block's inline size, which for this block-level child of `<body>` (margin 0) is the same width `main` centres itself within, so the two always agree. `max(0px, …)` collapses the extra inset to zero once the viewport is narrower than the measure, leaving just `--gutter` — so this single declaration covers every viewport and no media query is needed for it.
+
+Measured at 1280px: the first nav link's left edge and the hero `h1`'s left edge both sit at **x = 304px** (offset between them: **0px**). Before this change the nav sat at x = 24 while content started at x = 304 — a **280px** orphaning of the nav from the column it navigates. At 768px both sit at x = 48 (was a 24px offset); at 375px both at x = 24 (already aligned there, unchanged).
+
+`.site-nav` switches from `margin-right` on each link to a flex `gap`, which removes the dangling trailing margin after the last link — that margin was what made the nav's right edge not actually line up with anything.
+
+- [ ] **Step 4: Style the content column, section headings, hero, and contact links**
 
 Append to `style.css`:
 
 ```css
 main {
-  max-width: 720px;
+  max-width: var(--measure);
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 var(--gutter) 4rem;
 }
 
-.hero {
-  padding: 3rem 0 2rem;
-  border-bottom: 3px solid var(--accent);
+main > section {
+  padding: 0 0 4.5rem;
 }
 
-.hero h1 {
-  font-size: 2.5rem;
-  margin: 0 0 0.25rem;
+main > section:last-child {
+  padding-bottom: 0;
 }
 
-.hero-title {
-  color: var(--accent);
-  font-weight: 600;
-  margin: 0 0 1rem;
-}
-
-.hero-tagline {
+/*
+ * Section rules belong to the heading, not the section box, so a trailing
+ * section can never leave a stray rule floating above the footer.
+ */
+main > section > h2 {
+  margin: 0 0 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
   color: var(--text-muted);
-  max-width: 60ch;
-}
-
-.hero-links,
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-}
-
-.contact-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.contact-link:hover {
-  color: var(--accent);
-}
-
-section {
-  padding: 2.5rem 0;
-  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 #experience,
@@ -804,79 +846,323 @@ section {
   scroll-margin-top: 4.5rem;
 }
 
+.hero {
+  padding: 4rem 0 5rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.125rem, 7.5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.hero-title {
+  margin: 1.1rem 0 0;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-tagline {
+  max-width: 52ch;
+  margin: 2rem 0 2.25rem;
+  color: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+/* The one accent mark in the hero, sized as an accent rather than a full-width rule. */
+.hero-tagline::before {
+  content: "";
+  display: block;
+  width: 3.25rem;
+  height: 3px;
+  margin-bottom: 1.75rem;
+  background: var(--accent);
+}
+
+.hero-links,
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.contact-link {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  color: var(--text);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+/*
+ * The underline sits on the label span so the icon isn't underlined, and so
+ * these links stay distinguishable without relying on color alone.
+ */
+.contact-link span {
+  border-bottom: 1px solid var(--border-strong);
+  transition: border-color 0.15s ease;
+}
+
+.contact-link:hover {
+  color: var(--accent);
+}
+
+.contact-link:hover span {
+  border-color: var(--accent);
+}
+
+```
+
+Three things worth calling out here, because each replaces something that looked fine in the CSS and was wrong on screen:
+
+**The section rule moved from the section box to the heading.** Previously `section { border-bottom: 1px solid var(--border) }` put a rule under *every* section — including `#education`, the last one, which left a stray hairline floating in the gap above the footer, attached to nothing. Putting the rule on `h2` as a `border-top` means it renders exactly three times, always immediately above a label that explains it, and is structurally incapable of trailing: there is no fourth heading. Measured after: `#education`'s `border-bottom` is `0px none`, and all three `h2`s carry `1px solid`.
+
+**The hero's accent is a mark, not a rule.** It was a full-bleed `3px solid var(--accent)` across the bottom of the entire hero plus an accent-colored title line. It's now a 3.25rem bar rendered by `.hero-tagline::before`, which is what lets it sit *between* the mono title line and the tagline without any change to Task 4's markup. `.hero-title` moves to the mono label register instead of accent-colored bold body text.
+
+**The `h1` uses `clamp()` instead of a media-query font size.** The old rule needed a `@media (width <= 640px)` override to drop from 2.5rem to 1.875rem; `clamp(2.125rem, 7.5vw, 4rem)` covers the whole range continuously and lets the name go considerably larger on desktop (measured 64px at 1280px and 768px, 34px at 375px) without a second breakpoint to keep in sync. Verified no horizontal overflow at 375px (`scrollWidth === clientWidth === 375`).
+
+- [ ] **Step 5: Style the Experience timeline — the signature element**
+
+Append to `style.css`:
+
+```css
 .timeline {
-  list-style: none;
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .timeline-entry {
-  margin-bottom: 2rem;
-  padding-left: 1rem;
-  border-left: 2px solid var(--accent);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 3rem 1.75rem;
+  border-left: 1px solid var(--border);
 }
 
-.timeline-meta {
+.timeline-entry:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-entry::before {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  left: -4.5px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+/* Reordered visually only — company and dates read as an eyebrow above the role. */
+.timeline-entry .timeline-meta {
+  order: -1;
+  margin: 0 0 0.35rem;
   color: var(--text-muted);
-  margin: 0.15rem 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
 }
 
+.timeline-entry h3 {
+  margin: 0 0 1.1rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.timeline-entry ul {
+  display: grid;
+  gap: 0.7rem;
+  max-width: 58ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-entry ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.65;
+}
+
+/* A measurement tick rather than a browser-default disc. */
+.timeline-entry ul li::before {
+  content: "";
+  position: absolute;
+  top: 0.8em;
+  left: 0;
+  width: 0.6rem;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+```
+
+This block is the one that matters most, because the bullet lists it styles are the highest-content-density part of the page and the previous version of this task left them **completely unstyled** — inheriting the browser default `list-style-type: circle` and `padding-left: 40px`, with no gap between items, no line-length limit, and no custom marker. Every *other* element on the page had been given a custom treatment; the one carrying the actual resume content had not. Measured before → after on `.timeline-entry ul`: `list-style-type` `circle` → `none`; `padding-left` `40px` → `0px`; `display` `block` → `grid` with an `11.2px` row gap (was `normal`, i.e. items touching); `max-width` `none` (rendering 654px wide) → `58ch` (585px). On the `li`: `padding-left` `0px` → `24px`, and a real marker pseudo-element (`9.6 × 1px`, `--border-strong`) where there was none (`content: none`).
+
+The marker is a short horizontal rule, not a dot — it echoes the rail the entries hang off and reads as a tick on a scale, which is the direction from Step 1. It's set in `--border-strong`, not the accent: twelve accent-colored bullet markers would put the accent straight back onto the highest-frequency element on the page, which is the problem this redesign exists to fix.
+
+`.timeline-entry` keeps its left border on every entry (including the last) so the rail is continuous — verified: entry 1's bottom edge and entry 2's top edge are the same y-coordinate, so there's no gap in the line. The border is now a 1px `--border` hairline rather than a 2px accent stripe, with the accent concentrated into the 8px node instead. `left: -4.5px` centres that 8px node on the 1px border: for an absolutely-positioned child, `left` is measured from the containing block's *padding* box, so the border occupies −1px to 0px and its centre is at −0.5px. The `box-shadow` is a `--bg`-colored ring that punches the rail out from behind the node.
+
+`order: -1` on `.timeline-meta` is what puts company and dates above the role without touching Task 4's markup — the flex container reorders them visually while the DOM keeps the role first. This is safe here specifically because neither element is focusable, so there's no tab-order/visual-order mismatch (WCAG 2.4.3 is unaffected), and both sequences are meaningful readings of a resume entry (WCAG 1.3.2). It would **not** be safe to do this to a group containing links or buttons. Verified: `.timeline-meta` renders 26.4px above the `h3` in both entries.
+
+- [ ] **Step 6: Style Skills and Education**
+
+Append to `style.css`:
+
+```css
 .skill-group {
-  margin-bottom: 1.5rem;
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.25rem 0;
+}
+
+.skill-group:first-of-type {
+  padding-top: 0;
+}
+
+.skill-group + .skill-group {
+  border-top: 1px solid var(--border);
+}
+
+.skill-group h3 {
+  margin: 0;
+  padding-top: 0.4rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .skill-chips {
-  list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .chip {
+  padding: 0.28rem 0.55rem;
   background: var(--surface);
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.9rem;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .chip:hover {
-  background: var(--accent);
-  color: var(--bg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .education-entry {
-  margin-bottom: 1.5rem;
+  padding: 1.25rem 0;
 }
 
-.education-note {
-  color: var(--accent);
-  font-weight: 600;
+.education-entry:first-of-type {
+  padding-top: 0;
 }
+
+.education-entry + .education-entry {
+  border-top: 1px solid var(--border);
+}
+
+.education-entry h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.education-entry > p {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+/*
+ * Two class selectors so this beats `.education-entry > p` above — the honour
+ * note is a distinction, not another metadata line.
+ */
+.education-entry .education-note {
+  display: inline-block;
+  margin-top: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
 ```
 
-- [ ] **Step 5: Style the footer and add reduced-motion-respecting transitions**
+**The chips carried almost the entire accent problem.** With `border: 1px solid var(--accent)` on 34 chips, they alone accounted for 136 of the 143 accent-colored resting properties on the page — a wall of identically-outlined pills where the accent stopped reading as emphasis and became the page's default outline color. They're now neutral-outlined tags on `--surface` (which is finally visible, per Step 1) that turn accent on hover — which is what the spec's "skill-chip highlights" actually describes. Chip label text is `--text-muted` on `--surface`, measured 6.62:1 in both themes.
+
+**`.education-entry .education-note` uses two class selectors deliberately.** `.education-entry > p` (specificity 0,1,1) would otherwise beat a single-class `.education-note` (0,1,0) and silently repaint the honours note as ordinary muted metadata — the note is a `<p>` inside `.education-entry`, so both selectors match it. This is the CSS-specificity trap the `frontend-design` skill warns about, and it is live in this exact file; the two-class form (0,2,0) is what makes the intended rule win. Anyone reordering or "simplifying" these two selectors needs to re-check that the honours tag still renders as a tinted tag.
+
+**The `.skill-group` grid is a label column, not decoration.** At ≥40rem the category name sits in an 8rem left column with its tags to the right (see Step 8's media query), which rhymes with the Experience rail's left-marker structure and gives the Skills section a spine instead of six stacked heading-and-blob pairs. Below 40rem it collapses to stacked rows automatically, because the base rule is a single-column grid and only the column template is added at the breakpoint.
+
+Both lists use `+`-combinator rules for their separators (`.skill-group + .skill-group`, `.education-entry + .education-entry`) rather than a rule on every item, so — like the section headings in Step 4 — a trailing separator is structurally impossible rather than something to remember to suppress.
+
+- [ ] **Step 7: Style the footer and the focus states**
 
 Append to `style.css`:
 
 ```css
 .site-footer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.5rem;
   align-items: center;
-  gap: 1rem;
-  padding: 2rem 1.5rem;
-  text-align: center;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 2rem var(--gutter) 3rem;
+  border-top: 1px solid var(--border);
 }
 
 .download-resume {
-  color: var(--bg);
+  padding: 0.65rem 1.1rem;
   background: var(--accent);
-  padding: 0.6rem 1.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius);
+  color: var(--accent-contrast);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   text-decoration: none;
-  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.download-resume:hover {
+  background: var(--accent-hover);
+}
+
+/* Pushes the CTA to the right edge of the measure, opposite the contact links. */
+.site-footer .download-resume {
+  margin-left: auto;
 }
 
 .site-nav a:focus-visible,
@@ -884,13 +1170,22 @@ Append to `style.css`:
 .theme-toggle:focus-visible,
 .download-resume:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
+
 ```
 
-Note: measured contrast on the accessible-color pairs used in this file — body text, muted text, and accent-on-background all pass WCAG AA comfortably in both themes. Two things automated Lighthouse scoring doesn't catch, fixed here: `.theme-toggle`'s border was `var(--border)` (measured ~1.3:1 against the background in both themes — below the 3:1 WCAG 1.4.11 requires for UI component boundaries), now `var(--text-muted)` instead (measured well above 3:1); and there was no `:focus-visible` styling anywhere, so keyboard users had no visible indicator which link/button was focused (hover-only affordances existed for nav links, contact links, the toggle, and the download button, with no keyboard equivalent).
+The footer changes from a centered column to a row aligned to the same `--measure` as the header contents and `main`: contact links at the left edge, the download CTA pushed to the right edge by `margin-left: auto`, toggle after it. That mirrors the header (navigation left, control right) so the two bracket the content column instead of one being left-aligned and the other centered. It collapses back to a left-aligned column below 640px (Step 9).
 
-Continue appending to `style.css`:
+The two `.download-resume` rules **must stay in this order** — `.site-footer .download-resume` (0,2,0) after the bare `.download-resume` (0,1,0). Stylelint's `no-descending-specificity` rule fails the build if they're swapped; confirmed empirically (`Expected selector ".download-resume" to come before selector ".site-footer .download-resume"`).
+
+Note: measured contrast on every color pair in this file, in **both** themes, after the redesign — all pass, with the tightest margin on the theme-toggle boundary at 3.12:1 against a 3:1 requirement. Two things automated Lighthouse scoring doesn't catch, both preserved from the previous version of this task and re-verified against the new palette: `.theme-toggle`'s border must clear the 3:1 WCAG 1.4.11 floor for UI component boundaries (now `var(--border-strong)`, measured 3.67:1 on the header surface and 3.12:1 on the page background in light, 3.71/4.02:1 in dark — the original `var(--border)` measured ~1.3:1 and failed); and `:focus-visible` styling must exist at all, or keyboard users get no indication of what's focused, since every affordance here is otherwise hover-only. `outline-offset` goes from 2px to 3px because the tags and CTA now have a 4px radius, and a 2px offset made the ring visibly clip the corners.
+
+One addition this redesign makes on top of that baseline: `.contact-link span` carries a permanent `--border-strong` underline. The contact links previously had *no* non-color affordance at rest — they were plain `--text`-colored inline text that only became distinguishable on hover. That's WCAG 1.4.1 (use of color) territory for links inside a text block; the underline makes them identifiable without color and gives the hover state something to change rather than inventing one.
+
+- [ ] **Step 8: Add the scroll-reveal states (unchanged behaviour)**
+
+This block and the `.is-visible` class contract it defines are carried over from the previous version of this task **unchanged** — the redesign is a visual-system pass and deliberately does not touch the motion behaviour, the class contract `scroll-reveal.js` writes to, or the `@media print` override below. Append to `style.css`:
 
 ```css
 @media (prefers-reduced-motion: no-preference) {
@@ -909,27 +1204,41 @@ Continue appending to `style.css`:
     transform: translateY(0);
   }
 }
+
 ```
 
-Note: the spec calls for "fade-in on section entry" — i.e. triggered by scrolling a section into view, not a one-time page-load animation on every section simultaneously (the original `@keyframes`/`animation` approach here didn't actually do that; it faded every section in at once on load, nothing happened on scroll at all). This CSS only sets up the two states (hidden/`.is-visible`) and the transition between them; `scroll-reveal.js` (a new file, Step 7 below) does the actual scroll-triggered class toggling via `IntersectionObserver`. Scoped to `#experience`/`#skills`/`#education` only, not `.hero` — the hero is above the fold on load, so a scroll-triggered reveal doesn't apply to it; it should just be visible immediately.
+Note: the spec calls for "fade-in on section entry" — i.e. triggered by scrolling a section into view, not a one-time page-load animation on every section simultaneously (the original `@keyframes`/`animation` approach here didn't actually do that; it faded every section in at once on load, nothing happened on scroll at all). This CSS only sets up the two states (hidden/`.is-visible`) and the transition between them; `scroll-reveal.js` (a new file, Step 10 below) does the actual scroll-triggered class toggling via `IntersectionObserver`. Scoped to `#experience`/`#skills`/`#education` only, not `.hero` — the hero is above the fold on load, so a scroll-triggered reveal doesn't apply to it; it should just be visible immediately.
 
-- [ ] **Step 6: Add narrow-viewport styling**
+- [ ] **Step 9: Add the responsive and print rules**
 
-The spec names "mobile-first" as a requirement; the sticky header (3 nav links + a toggle button in a flex row) is the element most likely to break on a narrow screen. Append to `style.css`:
+The spec names "mobile-first" as a requirement. Most of the layout is now intrinsically responsive — `clamp()` on the `h1`, `max()` in the header padding, and wrapping flex rows — so these two breakpoints handle only what those can't express. Append to `style.css`:
 
 ```css
+@media (width >= 40rem) {
+  .skill-group {
+    grid-template-columns: 8rem 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+}
+
 @media (width <= 640px) {
   .site-header {
     flex-wrap: wrap;
     row-gap: 0.5rem;
   }
 
-  .site-nav a {
-    margin-right: 0.75rem;
+  .site-nav {
+    gap: 1.1rem;
   }
 
-  .hero h1 {
-    font-size: 1.875rem;
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-footer .download-resume {
+    margin-left: 0;
   }
 
   #experience,
@@ -950,11 +1259,11 @@ The spec names "mobile-first" as a requirement; the sticky header (3 nav links +
 }
 ```
 
-Note: the scroll-reveal's `opacity: 0` initial state (added in this task's Step 5) lives inside `@media (prefers-reduced-motion: no-preference)`, which applies under `print` too — `IntersectionObserver` fires against the scrolling viewport, not a print render, so a recruiter hitting Ctrl+P or "Save as PDF" on landing (without having scrolled) would get a document with Skills and Education silently blank. This `@media print` override forces all three visible for print regardless of scroll state. `transition: none` is load-bearing, not decorative — confirmed empirically: without it, opacity measures ~0.003 immediately after switching to print media (the 0.4s transition is still mid-flight), settling to `1` only ~700ms later, which would race an actual print snapshot; with `transition: none`, opacity is `1` immediately.
+Note: the scroll-reveal's `opacity: 0` initial state (added in this task's Step 8) lives inside `@media (prefers-reduced-motion: no-preference)`, which applies under `print` too — `IntersectionObserver` fires against the scrolling viewport, not a print render, so a recruiter hitting Ctrl+P or "Save as PDF" on landing (without having scrolled) would get a document with Skills and Education silently blank. This `@media print` override forces all three visible for print regardless of scroll state. `transition: none` is load-bearing, not decorative — confirmed empirically: without it, opacity measures ~0.003 immediately after switching to print media (the 0.4s transition is still mid-flight), settling to `1` only ~700ms later, which would race an actual print snapshot; with `transition: none`, opacity is `1` immediately.
 
 Note: the header only actually wraps to two lines at very narrow widths (empirically measured: still single-line, ~62.78px tall, all the way down to 375px; wraps to ~91.78px only at 320px) — but the `scroll-margin-top` override applies across the whole `<= 640px` breakpoint anyway, matching the layout breakpoint it's paired with rather than adding a third, narrower one just for this. That means a little extra (harmless) whitespace above the heading between 375-640px, where the header hasn't visually wrapped yet but the larger offset still applies. Verified via a real headless-browser click-and-measure test at both 1280px and 320px: heading top stays clear of the header bottom by ~40px in both cases, not just barely clearing.
 
-- [ ] **Step 7: Create the scroll-reveal script**
+- [ ] **Step 10: Create the scroll-reveal script**
 
 Create `src/assets/js/scroll-reveal.js`:
 
@@ -993,7 +1302,7 @@ Create `src/assets/js/scroll-reveal.js`:
 
 Three fallback paths, each deliberate: if `prefers-reduced-motion: reduce` is set, skip entirely (the CSS's `opacity: 0` initial state only applies inside the `no-preference` media query, so sections are already visible by default — nothing to reveal). If `IntersectionObserver` isn't supported, mark everything visible immediately rather than leaving sections permanently hidden. `unobserve` after the first trigger — this is a one-time reveal per section, not a repeat-on-every-scroll-past animation.
 
-- [ ] **Step 8: Add a no-JS fallback so sections aren't stuck invisible**
+- [ ] **Step 11: Add a no-JS fallback so sections aren't stuck invisible**
 
 In `src/_layouts/base.njk` (Task 4), the reduced-motion CSS's `opacity: 0` initial state depends on `scroll-reveal.js` actually running to reveal it — a visitor with JavaScript disabled would see `#experience`/`#skills`/`#education` permanently invisible, since nothing ever adds `.is-visible`. Add a `<noscript>` override right after the `<link rel="stylesheet" href="/assets/css/style.css">` line:
 
@@ -1011,7 +1320,7 @@ And add the script tag itself, alongside the existing `theme-toggle.js` referenc
 <script src="/assets/js/scroll-reveal.js"></script>
 ```
 
-- [ ] **Step 9: Verify Stylelint/ESLint pass, the build succeeds, the header doesn't break narrow, and sections actually reveal on scroll**
+- [ ] **Step 12: Verify Stylelint/ESLint pass, the build succeeds, the header doesn't break narrow, and sections actually reveal on scroll**
 
 `scripts/` doesn't exist yet at this point (Task 7 creates it) — same hazard already documented for Task 1/2's `lint` script; don't include it here:
 
@@ -1022,21 +1331,24 @@ npm run build
 npm run serve
 ```
 
-Expected: stylelint, eslint, and build all exit 0. With the dev server running: resize down to ~375px width and confirm the header still wraps correctly (Step 6's check, unchanged); scroll down and confirm Experience/Skills/Education each fade in as they enter the viewport, not all at once on load, and the Hero is visible immediately without any fade; disable JavaScript (devtools) and reload — confirm all sections are visible immediately with no permanently-invisible content; open the browser's print preview (Ctrl+P) immediately after page load, without scrolling first — confirm Experience/Skills/Education all render fully, not blank (this specifically tests the `@media print` override above, since without it a print/PDF-save on landing would silently drop everything the scroll-reveal hadn't triggered yet). Stop the server (Ctrl+C) when done.
+Expected: stylelint, eslint, and build all exit 0. With the dev server running: resize down to ~375px width and confirm the header still wraps correctly (Step 9's check, unchanged); scroll down and confirm Experience/Skills/Education each fade in as they enter the viewport, not all at once on load, and the Hero is visible immediately without any fade; disable JavaScript (devtools) and reload — confirm all sections are visible immediately with no permanently-invisible content; open the browser's print preview (Ctrl+P) immediately after page load, without scrolling first — confirm Experience/Skills/Education all render fully, not blank (this specifically tests the `@media print` override above, since without it a print/PDF-save on landing would silently drop everything the scroll-reveal hadn't triggered yet). Stop the server (Ctrl+C) when done.
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 13: Commit**
 
 ```bash
 git add src/assets/css/style.css src/assets/js/scroll-reveal.js src/_layouts/base.njk
 git commit -m "feat(design): implement the modern/distinctive visual system
 
-Space Grotesk + Inter type pairing, a single terracotta accent color
-(light/dark variants), CSS custom properties driving the data-theme
-attribute contract Task 6's JS toggles. Sticky header, timeline-styled
-experience entries, chip-styled skills, and a narrow-viewport
-breakpoint for the header — matching the spec's Visual design system
-and mobile-first requirements. No CSS framework, hand-written
-throughout.
+Instrument-panel direction: three type registers (Space Grotesk
+display, Inter body, IBM Plex Mono labels), a single indigo accent
+(light/dark variants) budgeted to six resting marks rather than
+applied throughout, and CSS custom properties driving the data-theme
+attribute contract Task 6's JS toggles. Sticky header content aligned
+to the same measure as main via a shared --measure/--gutter token
+pair, a tick-marked Experience rail with styled bullet content, and a
+narrow-viewport/print breakpoint set — matching the spec's Visual
+design system and mobile-first requirements. No CSS framework,
+hand-written throughout.
 
 Experience/Skills/Education fade in as each is scrolled into view
 (IntersectionObserver, one-time per section), matching the spec's
@@ -1171,12 +1483,14 @@ Create `src/assets/favicon.svg`:
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#a3423b"/>
-  <text x="16" y="22" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#fdfdfc" text-anchor="middle">MF</text>
+  <rect width="32" height="32" rx="6" fill="#4a35c9"/>
+  <text x="16" y="22" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">MF</text>
 </svg>
 ```
 
 SVG favicons are broadly supported by browsers, so no rasterization needed here — unlike the OG image below, which specifically needs to work with social-platform crawlers.
+
+Note: `#4a35c9` is Task 5's `--accent` and `#ffffff` its `--accent-contrast`, hardcoded here because an SVG asset can't read the page's CSS custom properties. These two literals (and the same pair in Step 2's OG image) are the *only* places the accent color is duplicated outside `style.css` — if the accent is ever changed, these are the files that must change with it, or the favicon and social card will silently keep rendering the old brand color.
 
 - [ ] **Step 2: Create the OG share-card source image**
 
@@ -1184,9 +1498,9 @@ Create `src/assets/og-image.svg` (1200×630, the standard OG image dimension):
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#a3423b"/>
-  <text x="80" y="300" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="72" font-weight="700" fill="#fdfdfc">Markus Luis Flores</text>
-  <text x="80" y="370" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="36" fill="#fdfdfc">Software Developer</text>
+  <rect width="1200" height="630" fill="#4a35c9"/>
+  <text x="80" y="300" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Markus Luis Flores</text>
+  <text x="80" y="370" font-family="DejaVu Sans, Liberation Sans, Arial, sans-serif" font-size="36" fill="#ffffff">Software Developer</text>
 </svg>
 ```
 
