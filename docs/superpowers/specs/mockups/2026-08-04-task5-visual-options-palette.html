@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Task 5 — Visual Design Options — Palette Swatches</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 40px; background: #f2f2f0; color: #111; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: #555; margin-top: 0; margin-bottom: 32px; }
+  .option { margin-bottom: 48px; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; }
+  .option-header { padding: 14px 20px; background: #1a1a1a; color: #fff; font-size: 16px; font-weight: 600; }
+  .themes { display: flex; }
+  .theme { flex: 1; padding: 24px; }
+  .theme.light { background: var(--bg); }
+  .theme.dark { background: var(--bg); }
+  .swatch-row { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .swatch { width: 92px; }
+  .chip { height: 48px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 4px; }
+  .swatch .label { font-size: 10px; font-family: monospace; color: var(--text); }
+  .sample { border-top: 1px solid var(--border); padding-top: 16px; }
+  .sample .name { font-size: 26px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
+  .sample .role { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  .sample .tagline { font-size: 14px; color: var(--text); max-width: 40ch; margin: 0 0 14px; }
+  .sample .tag { display: inline-block; padding: 4px 10px; font-size: 11px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); margin-right: 6px; }
+  .sample .cta { display: inline-block; padding: 8px 14px; background: var(--accent); color: var(--accent-contrast); border-radius: var(--radius); font-size: 12px; font-weight: 600; text-decoration: none; }
+  .theme-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px; }
+
+  .optA .theme.light { --bg:#faf9f7; --text:#1c1a17; --muted:#75706a; --border:#e5e0d8; --accent:#b5762a; --accent-contrast:#fff; --radius:6px; }
+  .optA .theme.dark  { --bg:#1b1815; --text:#f3efe9; --muted:#a89d90; --border:#332e28; --accent:#e8a94d; --accent-contrast:#1b1815; --radius:6px; }
+
+  .optB .theme.light { --bg:#f7f8f8; --text:#14181a; --muted:#5c6569; --border:#dde1e2; --accent:#1b7a72; --accent-contrast:#fff; --radius:4px; }
+  .optB .theme.dark  { --bg:#11161a; --text:#e8edf0; --muted:#8b969c; --border:#232c31; --accent:#5edcd0; --accent-contrast:#11161a; --radius:4px; }
+
+  .optC .theme.light { --bg:#fafafa; --text:#0a0a0a; --muted:#6b6b6b; --border:#e3e3e3; --accent:#c7401f; --accent-contrast:#fff; --radius:0px; }
+  .optC .theme.dark  { --bg:#0a0a0a; --text:#fafafa; --muted:#8a8a8a; --border:#262626; --accent:#ff6b45; --accent-contrast:#0a0a0a; --radius:0px; }
+</style>
+</head>
+<body>
+  <h1>Task 5 — Three Visual Direction Options</h1>
+  <p class="sub">Each rendered light + dark, with the actual palette applied to a small content sample (not just hex labels).</p>
+
+  <div class="option optA">
+    <div class="option-header">Option A — Editorial Restraint (amber accent, Fraunces + Inter, no mono)</div>
+    <div class="themes">
+      <div class="theme light">
+        <div class="theme-label">Light</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #faf9f7</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #1c1a17</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #75706a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #b5762a</div></div>
+        </div>
+        <div class="sample">
+          <p class="name">Markus Luis Flores</p>
+          <p class="role">Software Developer</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag">TypeScript</span><span class="tag">Playwright</span>
+          <a class="cta" href="#">Download Resume</a>
+        </div>
+      </div>
+      <div class="theme dark">
+        <div class="theme-label">Dark</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #1b1815</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #f3efe9</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #a89d90</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #e8a94d</div></div>
+        </div>
+        <div class="sample">
+          <p class="name">Markus Luis Flores</p>
+          <p class="role">Software Developer</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag">TypeScript</span><span class="tag">Playwright</span>
+          <a class="cta" href="#">Download Resume</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option optB">
+    <div class="option-header">Option B — Technical Precision (teal accent, Space Grotesk + Inter + JetBrains Mono labels)</div>
+    <div class="themes">
+      <div class="theme light">
+        <div class="theme-label">Light</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #f7f8f8</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #14181a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #5c6569</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #1b7a72</div></div>
+        </div>
+        <div class="sample">
+          <p class="name">Markus Luis Flores</p>
+          <p class="role" style="font-family:monospace">SOFTWARE DEVELOPER</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag" style="font-family:monospace">TYPESCRIPT</span><span class="tag" style="font-family:monospace">PLAYWRIGHT</span>
+          <a class="cta" href="#" style="font-family:monospace;text-transform:uppercase">Download Resume</a>
+        </div>
+      </div>
+      <div class="theme dark">
+        <div class="theme-label">Dark</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #11161a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #e8edf0</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #8b969c</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #5edcd0</div></div>
+        </div>
+        <div class="sample">
+          <p class="name">Markus Luis Flores</p>
+          <p class="role" style="font-family:monospace">SOFTWARE DEVELOPER</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag" style="font-family:monospace">TYPESCRIPT</span><span class="tag" style="font-family:monospace">PLAYWRIGHT</span>
+          <a class="cta" href="#" style="font-family:monospace;text-transform:uppercase">Download Resume</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option optC">
+    <div class="option-header">Option C — Bold Statement (vermillion accent, oversized Archivo/Inter Tight, 0 radius)</div>
+    <div class="themes">
+      <div class="theme light">
+        <div class="theme-label">Light</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #fafafa</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #0a0a0a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #6b6b6b</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #c7401f</div></div>
+        </div>
+        <div class="sample">
+          <p class="name" style="font-size:38px;letter-spacing:-0.03em">Markus Luis Flores</p>
+          <p class="role">Software Developer</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag">TypeScript</span><span class="tag">Playwright</span>
+          <a class="cta" href="#" style="border-bottom:2px solid var(--accent);background:transparent;color:var(--text);padding-left:0;padding-right:0;border-radius:0">Download Resume</a>
+        </div>
+      </div>
+      <div class="theme dark">
+        <div class="theme-label">Dark</div>
+        <div class="swatch-row">
+          <div class="swatch"><div class="chip" style="background:var(--bg)"></div><div class="label">bg #0a0a0a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--text)"></div><div class="label">text #fafafa</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">muted #8a8a8a</div></div>
+          <div class="swatch"><div class="chip" style="background:var(--accent)"></div><div class="label">accent #ff6b45</div></div>
+        </div>
+        <div class="sample">
+          <p class="name" style="font-size:38px;letter-spacing:-0.03em">Markus Luis Flores</p>
+          <p class="role">Software Developer</p>
+          <p class="tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+          <span class="tag">TypeScript</span><span class="tag">Playwright</span>
+          <a class="cta" href="#" style="border-bottom:2px solid var(--accent);background:transparent;color:var(--text);padding-left:0;padding-right:0;border-radius:0">Download Resume</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
