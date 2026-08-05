@@ -368,11 +368,11 @@ Create `src/_data/resume.json`:
         },
         {
           "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
-          "skills": ["Jira"]
+          "skills": ["Jira", "qTest"]
         },
         {
-          "text": "Support server deployments by configuring environments, validating builds, and performing post-deployment checks.",
-          "skills": ["Docker"]
+          "text": "Support QA environment deployments on Red Hat OpenShift via GitHub Actions and UrbanCode Deploy — validating successful rollouts and verifying pod health and logs post-deployment.",
+          "skills": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         }
       ]
     },
@@ -383,11 +383,11 @@ Create `src/_data/resume.json`:
       "bullets": [
         {
           "text": "Designed and developed new features and enhancements for Infor's SaaS Human Capital Management (HCM) platform based on business requirements.",
-          "skills": ["Java"]
+          "skills": ["Landmark Pattern Language (LPL)"]
         },
         {
           "text": "Maintained and improved existing HCM modules using Agile and object-oriented programming (OOP) practices.",
-          "skills": ["Agile Scrum Methodology", "Java"]
+          "skills": ["Agile Scrum Methodology", "Landmark Pattern Language (LPL)"]
         },
         {
           "text": "Led code reviews through meetings, Crucible, and GitLab. Maintained release versions code using AccuRev and Git.",
@@ -402,7 +402,7 @@ Create `src/_data/resume.json`:
         },
         {
           "text": "Supported QA teams by preparing detailed test cases, contributing to automation scripts, and ensuring coverage for functional and regression testing.",
-          "skills": ["Selenium"]
+          "skills": ["Business Logic Testing (BLT)"]
         }
       ]
     }
@@ -412,9 +412,19 @@ Create `src/_data/resume.json`:
       "category": "Frontend",
       "items": ["HTML", "CSS", "Tailwind CSS", "React.js", "Next.js", "JavaScript", "TypeScript", "Mantine"]
     },
-    { "category": "Backend", "items": ["Java", "PHP", "Node.js", "SQL", "NoSQL", "Docker"] },
+    {
+      "category": "Backend",
+      "items": ["Java", "PHP", "Node.js", "SQL", "NoSQL", "Docker", "Landmark Pattern Language (LPL)"]
+    },
     { "category": "AI Tools", "items": ["Claude Code", "Copilot", "Cursor", "n8n"] },
-    { "category": "Testing", "items": ["Selenium", "Playwright", "Postman"] },
+    {
+      "category": "Testing",
+      "items": ["Selenium", "Playwright", "Postman", "qTest", "Business Logic Testing (BLT)"]
+    },
+    {
+      "category": "DevOps",
+      "items": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+    },
     {
       "category": "Others",
       "items": ["Git", "RESTful API", "Jira", "Trello", "Confluence", "Agile Scrum Methodology", "AccuRev"]
@@ -450,24 +460,28 @@ Two rules govern the tags, and both matter more than they look:
 1. **A tag must exactly match a string that already exists in the `skills` array below it.** `"Agile Scrum Methodology"`, not `"Agile"`; `"Selenium"`, not `"Selenium WebDriver"`. Task 4's `isEvidenced` filter decides whether a chip is interactive by testing for exactly this string equality, so a paraphrased tag silently produces a bullet that no chip can ever reach.
 2. **Soft skills are never tagged.** "Problem-solving", "Communication" and the rest are real skills but they are not falsifiable at the sentence level, and tagging them would dilute the filter into noise. They render as inert chips, which is the honest outcome.
 
-**Tag provenance — the site owner should review this table before this task is marked done.** Six tags are read straight off the bullet text; six are inferred from role context and are the ones worth a second look. An inferred tag that is wrong is a small, quiet factual overclaim on a resume, so the bias here is toward deleting rather than keeping anything uncertain.
+**Tag provenance.** This table was reviewed by the site owner, who corrected an earlier draft that had guessed at several of these. All but one tag is now either stated in the bullet text or confirmed directly by the owner; the single remaining inference is marked as such.
 
 | Bullet | Tag(s) | Basis |
 |---|---|---|
 | RBC 1 — "comprehensive test strategies and technical solutions" | *(none)* | No named technology |
 | RBC 2 — "Collaborate in Agile ceremonies" | Agile Scrum Methodology | **Stated** — "Agile ceremonies" |
-| RBC 3 — "leveraging automation frameworks... end-to-end and integration testing" | Selenium | **Inferred** — the automation framework named at this role is Selenium (RBC 4) |
+| RBC 3 — "leveraging automation frameworks... end-to-end and integration testing" | Selenium | **Inferred** — the automation framework named at this role is Selenium (RBC 4). The only inference left in this table |
 | RBC 4 — "regression suites using Selenium" | Selenium | **Stated** |
-| RBC 5 — "test execution and defect triage" | Jira | **Inferred** — confirm Jira was RBC's tracker; delete if it was an internal tool |
-| RBC 6 — "configuring environments, validating builds" | Docker | **Inferred** — confirm these deployments were containerised; delete if not |
-| Infor 1 — "new features... for Infor's SaaS HCM platform" | Java | **Inferred** — confirm the platform's language |
-| Infor 2 — "using Agile and object-oriented programming (OOP) practices" | Agile Scrum Methodology, Java | **Stated** (Agile) / **Inferred** (Java, from OOP) |
+| RBC 5 — "test execution and defect triage" | Jira, qTest | **Owner-confirmed** — Jira for defect triage, qTest for test-execution tracking, with qTest results linked into Jira |
+| RBC 6 — "QA environment deployments on Red Hat OpenShift via GitHub Actions and UrbanCode Deploy" | Red Hat OpenShift, GitHub Actions, UrbanCode Deploy | **Stated** — all three named in the rewritten bullet |
+| Infor 1 — "new features... for Infor's SaaS HCM platform" | Landmark Pattern Language (LPL) | **Owner-confirmed, independently verified** — LPL is Infor's documented proprietary language for this platform |
+| Infor 2 — "using Agile and object-oriented programming (OOP) practices" | Agile Scrum Methodology, Landmark Pattern Language (LPL) | **Stated** (Agile) / **Owner-confirmed** (LPL, which is itself an OOP language — a closer fit to "OOP practices" than the Java this originally guessed) |
 | Infor 3 — "AccuRev and Git" | Git, AccuRev | **Stated** — both named |
 | Infor 4 — "Authored functional and technical design documents" | *(none)* | Confluence not named; not inferred |
 | Infor 5 — "Collaborated with Business Analysts and Product Owners" | Agile Scrum Methodology | **Stated** — "Product Owner" is a Scrum role |
-| Infor 6 — "contributing to automation scripts... regression testing" | Selenium | **Inferred** — confirm the automation tool used at Infor |
+| Infor 6 — "contributing to automation scripts... regression testing" | Business Logic Testing (BLT) | **Owner-confirmed** — BLT is Infor's internal spreadsheet-style automation tool for testing LPL logic. Not Selenium, which an earlier draft wrongly inferred |
 
-This tagging makes 7 of the 34 skills evidenced (Agile Scrum Methodology, Selenium, Java, Git, AccuRev, Jira, Docker) and leaves 27 as inert chips. Two of the seven — Selenium and Agile Scrum Methodology — span both roles, and the rest hit only one, which is what makes the "hollow node" state in Task 5 actually reachable. If the owner deletes several inferred tags the feature degrades gracefully: fewer interactive chips, everything else unchanged.
+**RBC 6's text was rewritten, not just retagged.** The original ("Support server deployments by configuring environments, validating builds, and performing post-deployment checks") claimed more ownership than is accurate — the owner verifies deployments that a developer has already configured rather than configuring containers themselves. The replacement names the actual platform and tooling and describes verification rather than configuration. `Docker` is consequently no longer tagged anywhere and renders as an inert chip.
+
+This tagging makes **11 of the 40 skills evidenced** — Agile Scrum Methodology, Selenium, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev — leaving **29 as inert chips**. 10 of the 12 bullets carry at least one tag.
+
+Only **one** skill, Agile Scrum Methodology, spans both roles; the other ten are scoped to a single job. That matters for Task 5's "hollow node" state, and both directions are reachable: filtering by LPL, BLT, Git or AccuRev hollows the RBC entry, and filtering by Selenium, Jira, qTest or any of the three DevOps tools hollows the Infor entry. Confirmed by recounting the data rather than estimating.
 
 - [ ] **Step 2: Verify it's valid JSON and Eleventy picks it up**
 
@@ -781,7 +795,7 @@ grep -c "data-filter-status" _site/index.html
 npx html-validate "_site/**/*.html"
 ```
 
-Expected, against the Task 3 data as written (all confirmed empirically from a real build of these exact files): build exits 0. `Royal Bank of Canada` = 1. `data-theme-toggle` = 2 (header + footer). `og:url` = 1. `contact-link` = 6 (3 links x 2 places — the macro is called from the identity block and the footer). `Fraunces` = 1 (the Google Fonts link). `data-skill="` = **7** — the evidenced skills, i.e. exactly the chips that render as buttons. `data-skills="` = **10** — the tagged bullets out of 12. `class="chip"` = **34** — every skill, buttons and spans together. `data-filter-status` = 1. `html-validate` exits 0.
+Expected, against the Task 3 data as written (all confirmed empirically from a real build of these exact files): build exits 0. `Royal Bank of Canada` = 1. `data-theme-toggle` = 2 (header + footer). `og:url` = 1. `contact-link` = 6 (3 links x 2 places — the macro is called from the identity block and the footer). `Fraunces` = 1 (the Google Fonts link). `data-skill="` = **11** — the evidenced skills, i.e. exactly the chips that render as buttons. `data-skills="` = **10** — the tagged bullets out of 12. `class="chip"` = **40** — every skill, buttons and spans together. `data-filter-status` = 1. `html-validate` exits 0.
 
 If `data-skill="` comes back as 0, the `isEvidenced` filter isn't matching: check that the tag strings in `resume.json` are byte-identical to the entries in its `skills[].items` arrays (Task 3's rule 1). This is the one failure in this task that produces a page that looks completely correct and has a dead feature.
 
@@ -1922,7 +1936,7 @@ Create `src/assets/js/skill-filter.js`:
 })();
 ```
 
-**`bullets` selects every `.timeline-entry ul li`, not only `li[data-skills]`.** This is the one place where the validated mockup was actually wrong and the difference is user-visible: if untagged bullets are excluded from the collection they never receive `.is-dim`, so while a filter is active they sit at full opacity next to the genuine matches and read as matches themselves. Selecting all of them means an untagged bullet correctly dims, and it also makes the announced denominator honest — "3 of 12", where 12 is every bullet in Experience.
+**`bullets` selects every `.timeline-entry ul li`, not only `li[data-skills]`.** This is the one place where the validated mockup was actually wrong and the difference is user-visible: if untagged bullets are excluded from the collection they never receive `.is-dim`, so while a filter is active they sit at full opacity next to the genuine matches and read as matches themselves. Selecting all of them means an untagged bullet correctly dims, and it also makes the announced denominator honest — "2 of 12", where 12 is every bullet in Experience.
 
 **Filtering is OR (union) across multiple active chips.** Bullets carry one to three tags, so AND would hit the empty set on the second click and read as broken; OR answers the question a visitor is actually asking ("show me everywhere they used any of these").
 
@@ -1952,7 +1966,7 @@ Expected: all five exit 0. With the dev server running, verify each of the follo
 
 **Sidebar.** At a wide, tall window (at least 1120x640), confirm the identity column sits left and stays pinned while Experience/Skills/Education scroll past it — scroll all the way to the bottom of Education and confirm the sidebar is *still* on screen, not scrolled away. Then shorten the window to under ~640px tall and confirm the layout drops to a single column with everything scrolling normally. Then narrow to 375px and confirm no horizontal scrollbar appears.
 
-**Cross-filter.** Hover a chip with a border (e.g. Selenium) without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the page scrolls to Experience, the amber filter bar appears reading "3 of 12 bullets highlighted", and the chip stays visibly active. Click a second chip (e.g. Java): the count rises rather than dropping to zero — that confirms OR, not AND. Click a chip that only matches one job (e.g. Git): the other job's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm a chip with no border (e.g. Postman, Trello) is not clickable and shows no pointer cursor.
+**Cross-filter.** Hover a chip with a border (e.g. Selenium) without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the page scrolls to Experience, the amber filter bar appears reading "2 of 12 bullets highlighted", and the chip stays visibly active. Click a second chip (e.g. Landmark Pattern Language (LPL)): the count rises to 4 rather than dropping to zero — that confirms OR, not AND, and with those two together neither job is hollow. Click Selenium again to release it: LPL alone matches only Infor, so the RBC entry's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm a chip with no border (e.g. Postman, Trello, Java, Docker) is not clickable and shows no pointer cursor.
 
 **Keyboard and screen reader.** Tab to a chip and press Enter — it must activate exactly as a click does. Inspect the chip in devtools and confirm `aria-pressed` flips `false` to `true`. Confirm the `[data-filter-status]` paragraph's text content updates to a full sentence naming the skill and the counts. **Lighthouse will not catch a broken `aria-pressed` or a live region that never fires**, so this check is not covered by the CI gate in Task 8 and has to be done by eye here.
 
