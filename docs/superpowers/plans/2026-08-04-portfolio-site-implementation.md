@@ -488,7 +488,7 @@ Two rules govern the tags, and both matter more than they look:
 
 **RBC 6's text was rewritten, not just retagged.** The original ("Support server deployments by configuring environments, validating builds, and performing post-deployment checks") claimed more ownership than is accurate — the owner verifies deployments that a developer has already configured rather than configuring containers themselves. The replacement names the actual platform and tooling and describes verification rather than configuration. `Docker` is consequently no longer tagged anywhere and renders as an inert chip.
 
-**RBC 3's text was also rewritten rather than retagged.** It is a test-*design* bullet, not a test-execution one, so Selenium never belonged on it — the original "leveraging automation frameworks" wording invited exactly the wrong inference. The replacement names the model-based design tools actually used (ConformIQ, Hexawise) and the more recent AI-assisted design work with Copilot driven by Jira requirements. Selenium remains tagged on RBC 4, where the bullet does name it.
+**RBC 3's text was also rewritten rather than retagged.** It is a test-*design* bullet, not a test-execution one, so Selenium never belonged on it — the original "leveraging automation frameworks" wording invited exactly the wrong inference. The replacement names the model-based design tools actually used (ConformIQ, Hexawise) and the more recent AI-assisted design work with Copilot driven by Jira requirements.
 
 This tagging makes **14 of the 42 skills evidenced** — Agile Scrum Methodology, ConformIQ, Hexawise, Copilot, Playwright, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev — leaving **28 as inert chips**. 10 of the 12 bullets carry at least one tag.
 
@@ -816,7 +816,7 @@ grep -c "data-filter-status" _site/index.html
 npx html-validate "_site/**/*.html"
 ```
 
-Expected, against the Task 3 data as written (all confirmed empirically from a real build of these exact files): build exits 0. `Royal Bank of Canada` = 1. `data-theme-toggle` = 2 (header + footer). `og:url` = 1. `contact-link` = 6 (3 links x 2 places — the macro is called from the identity block and the footer). `Fraunces` = 1 (the Google Fonts link). `data-skill="` = **14** — the evidenced skills, i.e. exactly the chips that render as buttons. `data-skills="` = **10** — the tagged bullets out of 12. `class="chip"` = **42** — every skill, buttons and spans together. `data-filter-status` = 1. `html-validate` exits 0.
+Expected, against the Task 3 data as written (all confirmed empirically from a real build of these exact files): build exits 0. `Royal Bank of Canada` = 2 (the entry's `.timeline-meta` text and its `data-company` attribute, which `skill-filter.js` reads for the filter bar's location-naming text). `data-theme-toggle` = 2 (header + footer). `og:url` = 1. `contact-link` = 6 (3 links x 2 places — the macro is called from the identity block and the footer). `Fraunces` = 1 (the Google Fonts link). `data-skill="` = **14** — the evidenced skills, i.e. exactly the chips that render as buttons. `data-skills="` = **10** — the tagged bullets out of 12. `class="chip"` = **42** — every skill, buttons and spans together. `data-filter-status` = 1. `html-validate` exits 0.
 
 If `data-skill="` comes back as 0, the `isEvidenced` filter isn't matching: check that the tag strings in `resume.json` are byte-identical to the entries in its `skills[].items` arrays (Task 3's rule 1). This is the one failure in this task that produces a page that looks completely correct and has a dead feature.
 
@@ -885,7 +885,7 @@ Before writing CSS, invoke the `frontend-design` skill (per the global workflow 
 
 **Nav motion.** Anchor clicks scroll smoothly (`scroll-behavior: smooth`, inside a `prefers-reduced-motion: no-preference` query), and a scroll-spy marks the section currently in view with `aria-current="location"`, which scales a 1px amber underline in from the left under that nav link. Under reduced motion the scroll is an instant jump and the underline appears with no transition — but the spy still marks the current section, because *which section you are in* is information, not animation.
 
-**Accent budget.** At rest the accent appears five times: the hero rule and two timeline nodes (decorative `--accent`), and the two honours tags plus the download CTA (`--accent-strong`). Everything else — chip borders, timeline rails, section rules, contact-link underlines — is a neutral hairline that turns accent on hover, focus, or filter match.
+**Accent budget.** At rest the accent appears six times by name — the hero rule and two timeline nodes (decorative `--accent`), and the two honours tags plus the download CTA (`--accent-strong`) — seven in the actual DOM, since the download CTA renders twice (sidebar and footer). Everything else — chip borders, timeline rails, section rules, contact-link underlines — is a neutral hairline that turns accent on hover, focus, or filter match.
 
 - [ ] **Step 2: Write the CSS custom-property theme system**
 
@@ -1946,7 +1946,8 @@ Create `src/assets/js/skill-filter.js`:
     }
     syncChrome();
     if (status) {
-      status.textContent = "Filtering Experience by " + names + ". " + summary + ".";
+      var tail = /\.$/.test(summary) ? "" : ".";
+      status.textContent = "Filtering Experience by " + names + ". " + summary + tail;
     }
   }
 
@@ -2047,7 +2048,7 @@ Create `src/assets/js/skill-filter.js`:
 })();
 ```
 
-**`bullets` selects every `.timeline-entry ul li`, not only `li[data-skills]`.** This is the one place where the validated mockup was actually wrong and the difference is user-visible: if untagged bullets are excluded from the collection they never receive `.is-dim`, so while a filter is active they sit at full opacity next to the genuine matches and read as matches themselves. Selecting all of them means an untagged bullet correctly dims, and it also makes the announced denominator honest — "1 of 12", where 12 is every bullet in Experience.
+**`bullets` selects every `.timeline-entry ul li`, not only `li[data-skills]`.** This is the one place where the validated mockup was actually wrong and the difference is user-visible: if untagged bullets are excluded from the collection they never receive `.is-dim`, so while a filter is active they sit at full opacity next to the genuine matches and read as matches themselves. Selecting all of them means an untagged bullet correctly dims instead of silently reading as a match.
 
 **Filtering is OR (union) across multiple active chips.** Bullets carry one to three tags, so AND would hit the empty set on the second click and read as broken; OR answers the question a visitor is actually asking ("show me everywhere they used any of these").
 
@@ -2081,11 +2082,11 @@ npx html-validate "_site/**/*.html"
 npm run serve
 ```
 
-Expected: all five exit 0. With the dev server running, verify each of the following — these are the behaviours this task exists to produce, and several of them caught real defects during authoring, so none of them are ceremonial:
+Expected: the first four exit 0; `npm run serve` starts the dev server (leave it running for the checks below, stop it with Ctrl+C when done). With the dev server running, verify each of the following — these are the behaviours this task exists to produce, and several of them caught real defects during authoring, so none of them are ceremonial:
 
 **Sidebar.** At a wide, tall window (at least 1120x640), confirm the identity column sits left and stays pinned while Experience/Skills/Education scroll past it — scroll all the way to the bottom of Education and confirm the sidebar is *still* on screen, not scrolled away. Then shorten the window to under ~640px tall and confirm the layout drops to a single column with everything scrolling normally. Then narrow to 375px and confirm no horizontal scrollbar appears.
 
-**Cross-filter.** Hover a chip with a border (e.g. Playwright) without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the amber filter bar appears reading "1 match in Royal Bank of Canada (RBC)", and the chip stays visibly active. Click a second chip (e.g. Landmark Pattern Language (LPL)): the count rises to 3 rather than dropping to zero — that confirms OR, not AND — and the bar now names both companies. Click Playwright again to release it: LPL alone matches only Infor, so the RBC entry's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm a chip with no border (e.g. Postman, Trello, Java, Docker, Selenium) is not clickable and shows no pointer cursor.
+**Cross-filter.** Evidenced chips (e.g. Playwright, LPL) and inert ones (e.g. Postman, Trello, Java, Docker, Selenium) look identical at rest — that's deliberate, per Step 8's note. Hover Playwright without clicking: matching bullets' ticks turn amber, the rest dim, and no filter bar appears. Move away: everything returns to normal. Now click it: the amber filter bar appears reading "1 match in Royal Bank of Canada (RBC)", and the chip stays visibly active. Click a second chip (e.g. Landmark Pattern Language (LPL)): the count rises to 3 rather than dropping to zero — that confirms OR, not AND — and the bar now names both companies. Click Playwright again to release it: LPL alone matches only Infor, so the RBC entry's timeline node goes hollow. Press Escape: everything clears and the bar disappears. Confirm an inert chip (e.g. Postman) is not clickable and shows no pointer cursor or hover state.
 
 **Scroll target.** From the top of the page, click a skill that only matches the *lower* Experience entry (Landmark Pattern Language (LPL) or Business Logic Testing (BLT)). The page must land on the Infor entry with its amber-ticked bullets visible below the sticky chrome — **not** on the top of Experience showing the dimmed, hollow-noded RBC entry. Then, with those bullets already on screen, click another chip: the page must not jump.
 
