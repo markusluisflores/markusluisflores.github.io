@@ -21,13 +21,13 @@ Resume-only content for this iteration, but the page structure (nav, layout, con
 
 ## Content sections (in order)
 
-1. **Hero** — name (typographic focal point), title/tagline, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text.
+1. **Hero** — name (typographic focal point), title/tagline, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text. On wide viewports the Hero also carries a second instance of the "Download Resume (PDF)" button, the same one-logical-control/two-visual-instances pattern already used for the theme toggle — see Visual design system below.
 2. **Experience** — reverse-chronological entries (company, role, dates, bullets), styled as a timeline rather than plain bullet lists.
 3. **Skills** — tag/pill chips grouped by category (e.g. Languages, Frameworks, Tools). See Skills-to-Experience filtering below for the interactive behavior on chips with real evidence.
 4. **Education**.
 5. **Footer** — repeats contact links, "Download Resume (PDF)" button, theme toggle control.
 
-Nav is anchor links (Experience / Skills / Education) in a slim sticky header alongside the theme toggle. This header is the seam where a future Projects anchor/page attaches. On wide viewports the nav's active-section indicator tracks scroll position as the visitor moves through the page. This is additive to the anchor-link model, not a replacement for it — see Visual design system below for the accompanying layout change.
+Nav is anchor links (Experience / Skills / Education) in a slim sticky header alongside the theme toggle. This header is the seam where a future Projects anchor/page attaches. The nav's active-section indicator tracks scroll position as the visitor moves through the page, at every viewport width — this is additive to the anchor-link model, not a replacement for it. See Visual design system below for the sidebar layout that applies on wide viewports specifically.
 
 No headshot/photo — typography-driven hero instead.
 
@@ -47,7 +47,7 @@ Each Skills chip that has real evidence in an Experience bullet — the skill is
 - **Typography**: a distinctive display font for name/headers (e.g. Fraunces, Space Grotesk, or Sora — exact choice deferred to implementation) paired with a plain workhorse sans (Inter or system-ui) for body text.
 - **Color**: CSS custom properties (`--bg`, `--text`, `--accent`, `--surface`, etc.) define the theme once; dark/light toggle swaps a `data-theme` attribute on `<html>`. Default follows `prefers-color-scheme`; user override persists via `localStorage`. One deliberate accent color (not default blue) — reserved mainly for interaction and emphasis (hover, focus, active states, a small number of deliberate resting marks) rather than applied broadly at rest across links, chips, and borders. Comparable-site research found that a quieter, interaction-reserved accent reads as more intentional at this page's scale than one applied everywhere it's permitted.
 - **Theme detection must run before first paint** to avoid a flash of the wrong theme: a small inline `<script>` in `base.njk`'s `<head>` (not the deferred `assets/js/theme-toggle.js` file) reads `localStorage`/`prefers-color-scheme` and sets `data-theme` synchronously. The external `theme-toggle.js` file only handles the click-to-toggle interaction after load.
-- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, tagline, contact links, download CTA) becomes a sticky sidebar beside an independently-scrolling content column carrying Experience/Skills/Education; below a width/height threshold it falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
+- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, tagline, contact links, download CTA) becomes a sticky sidebar (CSS `position: sticky`, not a separately-scrolling pane) beside Experience/Skills/Education, which continue to scroll as a normal part of the page — a nested, internally-scrolling content column was deliberately rejected, since that would break browser find-in-page, printing, and scroll-position restoration. Below a width/height threshold the layout falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
 - **No CSS framework** (no Tailwind/Bootstrap) — hand-written CSS, consistent with a hand-designed (not templated) look.
 - Exact font/color values are an implementation-time decision, made via the `frontend-design` skill per the standard workflow, not fixed in this spec.
 
@@ -68,6 +68,8 @@ markusluisflores.github.io/
 ├── src/
 │   ├── _layouts/
 │   │   └── base.njk          # shared <head>, nav, footer, theme-toggle script
+│   ├── _includes/
+│   │   └── contact-links.njk # shared icon+text contact-link macro (Hero + Footer)
 │   ├── _data/
 │   │   └── resume.json       # all resume content (experience, skills, education, links)
 │   ├── assets/
@@ -76,13 +78,20 @@ markusluisflores.github.io/
 │   │   ├── js/scroll-reveal.js
 │   │   ├── js/nav-spy.js
 │   │   ├── js/skill-filter.js
+│   │   ├── favicon.svg
+│   │   ├── og-image.svg / og-image.png   # PNG generated at build time, see below
 │   │   └── resume.pdf        # downloadable PDF
 │   └── index.njk             # the one page, pulls from resume.json via layout
+├── scripts/
+│   └── generate-og-image.js  # rasterizes og-image.svg to PNG (social crawlers need a raster format)
 ├── .eleventy.js               # Eleventy config (input/output dirs, passthrough copy)
 ├── package.json
-└── .github/workflows/
-    ├── ci.yml                 # lint, HTML validation, link check, Lighthouse, CodeQL, npm audit — runs on PRs
-    └── deploy.yml              # build with Eleventy, publish _site/ to Pages — runs on push to main
+└── .github/
+    ├── workflows/
+    │   ├── ci.yml             # lint, HTML validation, link check, Lighthouse, CodeQL, npm audit — runs on PRs
+    │   ├── codeql.yml         # CodeQL analysis, copied verbatim from the standard github-setup templates
+    │   └── deploy.yml         # build with Eleventy, publish _site/ to Pages — runs on push to main
+    └── (issue templates, PR template, Dependabot config — standard github-setup templates, not project-specific)
 ```
 
 Resume content lives in `resume.json`, separate from templates, so editing a job entry or skill is a data change, not a markup change. This is also what makes a future Projects section cheap: a `projects.json` + a new template, reusing the existing layout/nav.
@@ -126,7 +135,6 @@ Not adopted for this project (assessed and declined at project start): RFCs, AGE
 
 ## Open inputs needed before/during implementation
 
-- User's existing resume content, to populate `resume.json`.
-- A PDF version of the resume, for `src/assets/resume.pdf`.
-- Exact font and color choices — to be made during implementation via the `frontend-design` skill.
-- Favicon — either user-supplied, or generated during implementation the same way `og:image` is (a simple generated card), rather than user-supplied by default.
+- **A PDF version of the resume**, for `src/assets/resume.pdf` — the only input still genuinely open. This is a manual, human-only step (copying the real file into place); it's never written into the implementation plan itself, since the plan is a public document and the PDF is the user's real personal file.
+
+Resume content, font/color choices, and the favicon (an SVG generated to match the chosen accent color, per Task 7 of the implementation plan) were all decided and built out during Task 5's redesign work — no longer open.
