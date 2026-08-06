@@ -1544,9 +1544,25 @@ button.chip:focus-visible {
   outline-offset: 3px;
 }
 
+/*
+ * Chips are the only control on the page with an accent-coloured *selected*
+ * state, so their focus ring must not also be accent-coloured: a focused,
+ * unselected chip would otherwise be indistinguishable from a selected one.
+ * Ink instead, which also measures far higher against every surface it sits on.
+ */
+button.chip:focus-visible {
+  outline-color: var(--text);
+}
+
 ```
 
 The focus-visible list covers every interactive element on the page, including the two added by this task's interaction work (`.filter-clear` and `button.chip`). This matters more here than on a typical static page: chips are the primary interaction surface and are otherwise hover-only, so without a focus ring a keyboard user filtering the resume would have no idea which chip they are about to press. `outline-offset: 3px` clears the 6px radius — at 2px the ring visibly clipped the corners.
+
+**The chip override that follows is a bug fix, and the bug it fixes is worth understanding before anyone "tidies" it away.** Chips are the only control here with an accent-coloured *selected* state (`[aria-pressed="true"]`: amber border, amber label, tinted fill). While the focus ring was also amber, a focused-but-unselected chip was visually indistinguishable from a selected one.
+
+That collision surfaced as a reported bug that looked nothing like a styling issue: with several skills active, pressing Escape cleared everything correctly except that **one chip still looked selected** — a different chip each time, with no relation to where the mouse was. The mechanism is that Chromium re-evaluates its `:focus-visible` heuristic on **keyboard** input. Clicking a chip with a mouse focuses it but does not match `:focus-visible`, so no ring is drawn. Pressing Escape is keyboard input, at which point the still-focused chip starts matching `:focus-visible` and paints the ring **for the first time** — precisely as the selected styling is being removed. Measured on the real page, same chip, before and after Escape: `:focus` `true` -> `true`, `:focus-visible` `false` -> `true`, outline `none` -> `rgb(181, 118, 42) 2px`. Everything else was already correct: `aria-pressed` was `false`, the fill and border had returned to their resting values, and no bullet was still highlighted.
+
+Two fixes were rejected before this one. **Blurring the chip** on clear removes the ring but strands keyboard focus on `<body>`, sending the next Tab back to the top of the document — trading a cosmetic bug for a real WCAG 2.4.3 one. **Suppressing pointer events after the reflow** was aimed at an earlier, wrong theory (that the bar disappearing slid a chip under a stationary cursor); that theory was tested across two viewports, two clear methods and two target chips with the cursor deliberately parked on the chip's post-clear position, and never reproduced. Recolouring the ring keeps focus exactly where the visitor left it, keeps a visible focus indicator, and removes the ambiguity at its source. Ink also measures far better than the amber did: 16.5:1 on the page background and 17.36:1 on a chip in light, 15.07:1 and 14.08:1 in dark, against the 3:1 that WCAG 2.4.11 asks for.
 
 `.site-footer .download-resume` must stay after the bare `.download-resume` from Step 5 for `no-descending-specificity`; it is placed here rather than there because it is a footer-layout concern.
 
@@ -1830,6 +1846,7 @@ Create `src/assets/js/skill-filter.js`:
   }
 
   var active = [];
+  var lastChip = null;
 
   // The filter bar is a second sticky layer and it wraps, so its height depends
   // on how many chips are active and how wide the viewport is. Measure it rather
@@ -1937,12 +1954,20 @@ Create `src/assets/js/skill-filter.js`:
     announce(paint(null));
   }
 
+  // Clearing hides the bar. If focus was inside it (i.e. the visitor used the
+  // Clear button) that focus would be destroyed and fall to <body>, stranding a
+  // keyboard user at the top of the document. Return it to the chip they last
+  // toggled — the control that put the bar there in the first place.
   function clearAll() {
+    var focusWasInBar = bar.contains(document.activeElement);
     active = [];
     chips.forEach(function (chip) {
       chip.setAttribute("aria-pressed", "false");
     });
     commit();
+    if (focusWasInBar && lastChip) {
+      lastChip.focus();
+    }
   }
 
   // Scroll to the first matching bullet's entry, not to the top of Experience.
@@ -1981,6 +2006,7 @@ Create `src/assets/js/skill-filter.js`:
     });
 
     chip.addEventListener("click", function () {
+      lastChip = chip;
       if (isActive(skill)) {
         active = active.filter(function (name) {
           return name !== skill;
@@ -2033,6 +2059,8 @@ Create `src/assets/js/skill-filter.js`:
 
 **The status text names where the matches are, not just how many.** "2 matches in Infor PSSC, Inc." answers the question a bare count leaves open, and it is what makes the interaction legible even when a match is off-screen. `matchedCompanies()` reads `data-company` off each entry that contains a match (Task 4 emits it), so the wording follows the data rather than hardcoding company names. Both the visible bar and the live region use the same sentence.
 
+**`clearAll()` restores focus when the visitor used the Clear button.** Hiding the bar destroys the focus of anything inside it, so clearing that way dropped focus onto `<body>` and sent the next Tab to the top of the document. `lastChip` records the chip most recently toggled, and focus returns there — the control that put the bar on screen. Escape pressed while focus is already on a chip leaves it alone, because it is already in the right place.
+
 **`syncChrome()` is why the filter bar can wrap freely.** It writes `--chrome-h` as the measured header plus bar height on every state change, and a `ResizeObserver` on both elements keeps it current through viewport resizes and chip toggles. A `window.resize` listener stands in where `ResizeObserver` is unavailable. See Step 4 for the bug this replaced.
 
 **Escape clears from anywhere**, which is the keyboard equivalent of the bar's Clear button and means a visitor can always get back to the unfiltered resume without hunting for the pressed chip.
@@ -2066,6 +2094,8 @@ Expected: all five exit 0. With the dev server running, verify each of the follo
 **Keyboard and screen reader.** Tab to a chip and press Enter — it must activate exactly as a click does. Inspect the chip in devtools and confirm `aria-pressed` flips `false` to `true`. Confirm the `[data-filter-status]` paragraph's text content updates to a full sentence naming the skill and the counts. **Lighthouse will not catch a broken `aria-pressed` or a live region that never fires**, so this check is not covered by the CI gate in Task 8 and has to be done by eye here.
 
 **Nav.** Click each nav link and confirm the page glides rather than jumping, and that the amber underline moves to the clicked link and then tracks the section you scroll into. Enable "Emulate prefers-reduced-motion" in devtools and repeat: navigation must jump instantly and the underline must appear without animating, but it must still mark the correct section.
+
+**Focus after clearing.** Click two or three chips with the mouse, move the pointer away from the chip list, then press Escape. Everything must clear, and the chip you clicked last may show a thin **ink** ring — that is the focus indicator and is correct. It must **not** show an amber ring, amber border, amber label or tinted fill; any of those means the selected styling has leaked into the focus state and the "one chip looks stuck" bug is back. Repeat driving the chips by keyboard (Tab to a chip, Enter, Tab to another, Enter, then Escape) — same result. Then clear using the Clear button instead and press Tab: focus must continue from the chip list, not restart at the top of the page.
 
 **Degraded paths.** Disable JavaScript and reload: all sections visible, all 12 bullets present and undimmed, no filter bar, and the chip buttons must not show a pointer cursor (Task 4's `<noscript>` block handles that last one). With JS back on, apply a filter and then open print preview (Ctrl+P) **without clearing it**: the printed document must show every bullet at full opacity with no header or filter bar.
 
