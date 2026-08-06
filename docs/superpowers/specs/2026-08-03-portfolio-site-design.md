@@ -93,14 +93,14 @@ markusluisflores.github.io/
     │   ├── ci.yml             # lint, HTML validation, link check, Lighthouse, npm audit — runs on PRs
     │   ├── codeql.yml         # CodeQL analysis, its own separate workflow, copied verbatim from the standard github-setup templates
     │   └── deploy.yml         # build with Eleventy, publish _site/ to Pages — runs on push to main
-    └── (issue templates, PR template, Dependabot config — standard github-setup templates, not project-specific)
+    └── (issue templates, PR template, Dependabot config — standard github-setup templates, with the security-policy URL and PR checklist edited for this project specifically)
 ```
 
 Resume content lives in `resume.json`, separate from templates, so editing a job entry or skill is a data change, not a markup change. This is also what makes a future Projects section cheap: a `projects.json` + a new template, reusing the existing layout/nav.
 
 ## Quality, testing & CI
 
-No unit tests — there's no application logic, just presentational markup driven by data. Instead:
+No unit test framework — the interactive logic that does exist (the Skills-to-Experience filter's matching/highlighting, the nav scroll-spy) is small in surface area and was verified empirically, via real browser testing during the plan's own authoring, rather than a test suite; introducing a test framework for that scope wasn't judged worth the setup cost on a solo static site. Instead:
 
 - **HTML validation** via `html-validate` — catches broken markup.
 - **Broken-link check** — catches a dead GitHub/LinkedIn/PDF link before it ships.
@@ -111,13 +111,13 @@ All of the above run in `ci.yml` on every PR.
 
 Quality baseline, scoped to what applies to a static JS-tooling project (per the standard New Project checklist):
 
-- **Pre-commit**: husky + lint-staged running ESLint (the small amount of vanilla JS), Prettier (HTML/CSS/JS/JSON), Stylelint (CSS).
+- **Pre-commit**: husky + lint-staged running ESLint (the vanilla JS — theme toggle, scroll-reveal, nav-spy, skill-filter), Prettier (HTML/CSS/JS/JSON), Stylelint (CSS).
 - **Commit-msg linting**: commitlint hook per the global git commit standard, applied in full — no deviations for this repo.
 - **Secret scanning**: gitleaks pre-commit + GitHub push protection.
 - **SAST**: CodeQL for JavaScript in CI.
 - **Dependency scan**: Dependabot + `npm audit` in CI.
 - **Auto-delete merged branches**: repository setting.
-- **Type checking: skipped.** No TypeScript in this project — only a handful of vanilla JS lines for the theme toggle; not worth introducing a type system for that.
+- **Type checking: skipped.** No TypeScript in this project — the vanilla JS across the four client-side scripts stays small and dependency-free by design; not worth introducing a type system for that scope.
 
 Not adopted for this project (assessed and declined at project start): RFCs, AGENTS.md, log4brains (all overkill for a solo, low-ADR-volume project), multi-model-review (optional; skipped as unnecessary for a static site with no business logic).
 
@@ -139,4 +139,4 @@ Not adopted for this project (assessed and declined at project start): RFCs, AGE
 
 - **A PDF version of the resume**, for `src/assets/resume.pdf` — the only input still genuinely open. This is a manual, human-only step (copying the real file into place); it's never written into the implementation plan itself, since the plan is a public document and the PDF is the user's real personal file.
 
-Resume content, font/color choices, and the favicon (an SVG generated to match the chosen accent color, per Task 7 of the implementation plan) were all decided and built out during Task 5's redesign work — no longer open.
+Resume content (Task 3), the favicon (Task 7, an SVG generated to match the chosen accent color), and font/color choices (Task 5) were all decided and built out during the implementation plan's work — no longer open.
