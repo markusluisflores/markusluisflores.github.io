@@ -121,6 +121,6 @@ The CSS already written into the plan (indigo accent, three-register type includ
 
 | Question | Chosen | Why | Tradeoff accepted |
 |---|---|---|---|
-| Q1 — Which of the three visual directions? | *(pending)* | — | — |
-| Q2 — If Option B: keep or drop the mono label register's uppercase+tracking treatment on section headings specifically (heaviest single use of it)? | *(pending)* | — | — |
-| Q3 — Accent hue: keep as shown, or a different color entirely (all three avoid blue/purple/indigo per spec + research; pick a specific hue if none of the three shown fit)? | *(pending)* | — | — |
+| Q1 — Which of the three visual directions? | **Option A — Editorial Restraint** | Fraunces + Inter, distinctiveness from typographic voice and restraint rather than an added family or a literal metaphor — closest to the genre's most-respected reference points. | Lower structural ambition than Option B's three-family label system; no mono register. |
+| Q2 — If Option B: keep or drop the mono label register's uppercase+tracking treatment on section headings specifically (heaviest single use of it)? | **N/A — moot.** | Option A was chosen, not Option B, so this question about Option B's mono register never arises. | — |
+| Q3 — Accent hue: keep as shown, or a different color entirely (all three avoid blue/purple/indigo per spec + research; pick a specific hue if none of the three shown fit)? | **Kept as shown — deep amber**, `#b5762a` light / `#e8a94d` dark, later split into `--accent` (decorative) and `--accent-strong` (text/CTA, fixing a contrast failure in the original single-token version). | Matches Option A as presented; no alternative hue was requested. | Accent reserved mainly for interaction/emphasis rather than applied broadly at rest, per platform research into comparable sites. |
