@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-08-03
-**Revised:** 2026-08-05 — added the sticky-sidebar desktop layout, the Skills-to-Experience filtering interaction, and clarified the accent color's interaction-reserved usage. All three were designed and approved during Task 5's implementation-plan work; this revision brings the spec back in sync with what the plan now builds.
+**Revised:** 2026-08-05 — added the sticky-sidebar desktop layout, the Skills-to-Experience filtering interaction, and the nav scroll-spy indicator, and synced several other details (typography, the download-CTA duplication, the project file tree, the CI/testing rationale) with what the implementation plan actually builds across Tasks 3-9. All were designed and approved during that plan's work; this revision brings the spec back in sync with it.
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Resume-only content for this iteration, but the page structure (nav, layout, con
 
 ## Content sections (in order)
 
-1. **Hero** — name (typographic focal point), title/tagline, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text, and a second instance of the "Download Resume (PDF)" button — present in the markup at every viewport, the same one-logical-control/two-visual-instances pattern already used for the theme toggle. Only its *sticky, always-reachable* positioning is specific to wide viewports — see Visual design system below.
+1. **Hero** — name (typographic focal point), title/tagline, location, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text, and a second instance of the "Download Resume (PDF)" button — present in the markup at every viewport, the same one-logical-control/two-visual-instances pattern already used for the theme toggle. Only its *sticky, always-reachable* positioning is specific to wide viewports — see Visual design system below.
 2. **Experience** — reverse-chronological entries (company, role, dates, bullets), styled as a timeline rather than plain bullet lists.
 3. **Skills** — tag/pill chips grouped by category (e.g. Languages, Frameworks, Tools). See Skills-to-Experience filtering below for the interactive behavior on chips with real evidence.
 4. **Education**.
@@ -35,11 +35,11 @@ The theme toggle is **one logical control with two visual instances** (header an
 
 ### Head metadata
 
-Beyond the visible content sections, `base.njk` sets: page `<title>`, a meta description (short professional summary, reused as the OG description), Open Graph tags (`og:title`, `og:description`, `og:image` — a simple generated card, since LinkedIn/social shares render these), and a favicon. This matters concretely because Lighthouse's SEO check is a CI gate (see Quality, testing & CI below) and because the page's contact links include LinkedIn, where a shared link with no OG image/description looks unpolished.
+Beyond the visible content sections, `base.njk` sets: page `<title>`, a meta description (short professional summary, reused as the OG description), Open Graph tags (`og:title`, `og:description`, `og:image` — a simple generated card, since LinkedIn/social shares render these), and a favicon. This matters concretely because Lighthouse reports an SEO score on every PR (see Quality, testing & CI below — accessibility is the only Lighthouse metric that actually gates the build) and because the page's contact links include LinkedIn, where a shared link with no OG image/description looks unpolished.
 
 ### Skills-to-Experience filtering
 
-Each Skills chip that has real evidence in an Experience bullet — the skill is actually named in describing that piece of work, not just present somewhere on the resume — is interactive: clicking it highlights the matching Experience bullets and dims the rest, with multiple skills selectable at once (a bullet lights up if it matches *any* currently-active skill). This is deliberately not universal: a skill with no bullet behind it stays a plain, non-interactive label rather than a button that goes nowhere — an honest outcome for a real skill that isn't demonstrated by a specific piece of described work, not a gap to paper over. The feature is progressive enhancement — with JavaScript unavailable, the page shows the complete, unfiltered resume with no controls and nothing hidden. The intent is to let a visitor, a hiring manager in particular, verify a specific skill claim against concrete evidence rather than trusting a bare list.
+Each Skills chip that has real evidence in an Experience bullet — either named directly in describing that piece of work, or a fact the resume's owner has separately confirmed applies to it, not just a skill present somewhere else on the resume — is interactive: clicking it highlights the matching Experience bullets and dims the rest, with multiple skills selectable at once (a bullet lights up if it matches *any* currently-active skill). This is deliberately not universal: a skill with no bullet behind it stays a plain, non-interactive label rather than a button that goes nowhere — an honest outcome for a real skill that isn't demonstrated by a specific piece of described work, not a gap to paper over. The feature is progressive enhancement: chip interactivity (which skills render as real, focusable buttons versus plain labels) is decided at build time from the evidence data, not by whether JavaScript runs — so with JavaScript unavailable, the page still shows the complete, unfiltered resume with nothing hidden, just without the click-to-filter behavior or its hover affordance. The intent is to let a visitor, a hiring manager in particular, verify a specific skill claim against concrete evidence rather than trusting a bare list.
 
 ## Visual design system
 
@@ -47,7 +47,7 @@ Each Skills chip that has real evidence in an Experience bullet — the skill is
 - **Typography**: a distinctive display font for name/headers paired with a plain workhorse sans for body text. Decided during Task 5's work: Fraunces (display) + Inter (body).
 - **Color**: CSS custom properties (`--bg`, `--text`, `--accent`, `--surface`, etc.) define the theme once; dark/light toggle swaps a `data-theme` attribute on `<html>`. Default follows `prefers-color-scheme`; user override persists via `localStorage`. One deliberate accent color (not default blue) — reserved mainly for interaction and emphasis (hover, focus, active states, a small number of deliberate resting marks) rather than applied broadly at rest across links, chips, and borders. Comparable-site research found that a quieter, interaction-reserved accent reads as more intentional at this page's scale than one applied everywhere it's permitted.
 - **Theme detection must run before first paint** to avoid a flash of the wrong theme: a small inline `<script>` in `base.njk`'s `<head>` (not the deferred `assets/js/theme-toggle.js` file) reads `localStorage`/`prefers-color-scheme` and sets `data-theme` synchronously. The external `theme-toggle.js` file only handles the click-to-toggle interaction after load.
-- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, tagline, contact links, download CTA) becomes a sticky sidebar beside Experience/Skills/Education, which continue to scroll as a normal part of the page — a nested, internally-scrolling *content* column was deliberately rejected, since that would break browser find-in-page, printing, and scroll-position restoration. The sidebar itself does have its own `overflow-y: auto` as a narrow accessibility fallback, separate from that rejected design: if the identity content (name/tagline/links/CTA) is ever taller than the available height — a short laptop viewport, or 200% browser zoom — the sidebar scrolls internally rather than silently stranding the download CTA out of reach. Below a width/height threshold the layout falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
+- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, title, location, tagline, contact links, download CTA) becomes a sticky sidebar beside Experience/Skills/Education, which continue to scroll as a normal part of the page — a nested, internally-scrolling *content* column was deliberately rejected, since that would break browser find-in-page, printing, and scroll-position restoration. The sidebar itself does have its own `overflow-y: auto` as a narrow accessibility fallback, separate from that rejected design: if the identity content (name/tagline/links/CTA) is ever taller than the available height — a short laptop viewport, or 200% browser zoom — the sidebar scrolls internally rather than silently stranding the download CTA out of reach. Below a width/height threshold the layout falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
 - **No CSS framework** (no Tailwind/Bootstrap) — hand-written CSS, consistent with a hand-designed (not templated) look.
 
 ## Architecture
@@ -66,7 +66,7 @@ Static site generator: **Eleventy (11ty)**, chosen over two alternatives:
 markusluisflores.github.io/
 ├── src/
 │   ├── _layouts/
-│   │   └── base.njk          # shared <head>, nav, footer, theme-toggle script
+│   │   └── base.njk          # shared <head>, nav, footer, filter bar, live region, theme-toggle script
 │   ├── _includes/
 │   │   └── contact-links.njk # shared icon+text contact-link macro (Hero + Footer)
 │   ├── _data/
@@ -100,7 +100,7 @@ Resume content lives in `resume.json`, separate from templates, so editing a job
 
 ## Quality, testing & CI
 
-No unit test framework — the interactive logic that does exist (the Skills-to-Experience filter's matching/highlighting, the nav scroll-spy) is small in surface area and was verified empirically, via real browser testing during the plan's own authoring, rather than a test suite; introducing a test framework for that scope wasn't judged worth the setup cost on a solo static site. Instead:
+No unit test framework — the interactive logic that does exist (the Skills-to-Experience filter's matching/highlighting, the nav scroll-spy) is small in surface area and was verified empirically once, via real browser testing during the plan's own authoring; that check doesn't re-run in CI on future changes, and introducing an automated test framework for this scope wasn't judged worth the setup cost on a solo static site. Instead:
 
 - **HTML validation** via `html-validate` — catches broken markup.
 - **Broken-link check** — catches a dead GitHub/LinkedIn/PDF link before it ships.
