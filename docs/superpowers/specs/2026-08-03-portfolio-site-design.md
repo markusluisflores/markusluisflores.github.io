@@ -21,7 +21,7 @@ Resume-only content for this iteration, but the page structure (nav, layout, con
 
 ## Content sections (in order)
 
-1. **Hero** — name (typographic focal point), title/tagline, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text. On wide viewports the Hero also carries a second instance of the "Download Resume (PDF)" button, the same one-logical-control/two-visual-instances pattern already used for the theme toggle — see Visual design system below.
+1. **Hero** — name (typographic focal point), title/tagline, accent-color treatment, contact links (Email, GitHub, LinkedIn) as icon+text, and a second instance of the "Download Resume (PDF)" button — present in the markup at every viewport, the same one-logical-control/two-visual-instances pattern already used for the theme toggle. Only its *sticky, always-reachable* positioning is specific to wide viewports — see Visual design system below.
 2. **Experience** — reverse-chronological entries (company, role, dates, bullets), styled as a timeline rather than plain bullet lists.
 3. **Skills** — tag/pill chips grouped by category (e.g. Languages, Frameworks, Tools). See Skills-to-Experience filtering below for the interactive behavior on chips with real evidence.
 4. **Education**.
@@ -44,12 +44,11 @@ Each Skills chip that has real evidence in an Experience bullet — the skill is
 ## Visual design system
 
 - **Aesthetic direction: modern & distinctive** (chosen over minimal/professional and developer/technical) — the user's actual paper resume already covers the safe/minimal treatment for direct employer submissions; this site is the place for a stronger visual identity.
-- **Typography**: a distinctive display font for name/headers (e.g. Fraunces, Space Grotesk, or Sora — exact choice deferred to implementation) paired with a plain workhorse sans (Inter or system-ui) for body text.
+- **Typography**: a distinctive display font for name/headers paired with a plain workhorse sans for body text. Decided during Task 5's work: Fraunces (display) + Inter (body).
 - **Color**: CSS custom properties (`--bg`, `--text`, `--accent`, `--surface`, etc.) define the theme once; dark/light toggle swaps a `data-theme` attribute on `<html>`. Default follows `prefers-color-scheme`; user override persists via `localStorage`. One deliberate accent color (not default blue) — reserved mainly for interaction and emphasis (hover, focus, active states, a small number of deliberate resting marks) rather than applied broadly at rest across links, chips, and borders. Comparable-site research found that a quieter, interaction-reserved accent reads as more intentional at this page's scale than one applied everywhere it's permitted.
 - **Theme detection must run before first paint** to avoid a flash of the wrong theme: a small inline `<script>` in `base.njk`'s `<head>` (not the deferred `assets/js/theme-toggle.js` file) reads `localStorage`/`prefers-color-scheme` and sets `data-theme` synchronously. The external `theme-toggle.js` file only handles the click-to-toggle interaction after load.
-- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, tagline, contact links, download CTA) becomes a sticky sidebar (CSS `position: sticky`, not a separately-scrolling pane) beside Experience/Skills/Education, which continue to scroll as a normal part of the page — a nested, internally-scrolling content column was deliberately rejected, since that would break browser find-in-page, printing, and scroll-position restoration. Below a width/height threshold the layout falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
+- **Layout**: CSS Grid/Flexbox, mobile-first, generous section spacing, subtle hover/scroll transitions (fade-in on section entry, hover states on links/chips) — nothing heavy. On wide viewports, the Hero (name, tagline, contact links, download CTA) becomes a sticky sidebar beside Experience/Skills/Education, which continue to scroll as a normal part of the page — a nested, internally-scrolling *content* column was deliberately rejected, since that would break browser find-in-page, printing, and scroll-position restoration. The sidebar itself does have its own `overflow-y: auto` as a narrow accessibility fallback, separate from that rejected design: if the identity content (name/tagline/links/CTA) is ever taller than the available height — a short laptop viewport, or 200% browser zoom — the sidebar scrolls internally rather than silently stranding the download CTA out of reach. Below a width/height threshold the layout falls back to the single-column, in-order stack, which remains the mobile-first base case rather than a degraded fallback.
 - **No CSS framework** (no Tailwind/Bootstrap) — hand-written CSS, consistent with a hand-designed (not templated) look.
-- Exact font/color values are an implementation-time decision, made via the `frontend-design` skill per the standard workflow, not fixed in this spec.
 
 ## Architecture
 
@@ -86,10 +85,13 @@ markusluisflores.github.io/
 │   └── generate-og-image.js  # rasterizes og-image.svg to PNG (social crawlers need a raster format)
 ├── .eleventy.js               # Eleventy config (input/output dirs, passthrough copy)
 ├── package.json
+├── lighthouserc.json          # Lighthouse CI config, accessibility >= 0.9 assertion
+├── SECURITY.md
+├── CONTRIBUTING.md
 └── .github/
     ├── workflows/
-    │   ├── ci.yml             # lint, HTML validation, link check, Lighthouse, CodeQL, npm audit — runs on PRs
-    │   ├── codeql.yml         # CodeQL analysis, copied verbatim from the standard github-setup templates
+    │   ├── ci.yml             # lint, HTML validation, link check, Lighthouse, npm audit — runs on PRs
+    │   ├── codeql.yml         # CodeQL analysis, its own separate workflow, copied verbatim from the standard github-setup templates
     │   └── deploy.yml         # build with Eleventy, publish _site/ to Pages — runs on push to main
     └── (issue templates, PR template, Dependabot config — standard github-setup templates, not project-specific)
 ```
