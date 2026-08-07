@@ -6,12 +6,35 @@
   "scripts": {
     "build": "eleventy",
     "serve": "eleventy --serve",
-    "lint": "eslint src/assets/js .eleventy.js && stylelint \"src/assets/css/**/*.css\""
+    "lint": "eslint src/assets/js .eleventy.js && stylelint \"src/assets/css/**/*.css\"",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.6"
+    "@11ty/eleventy": "^3.1.6",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.6",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }
