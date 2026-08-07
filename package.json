@@ -6,8 +6,9 @@
   "scripts": {
     "build": "eleventy",
     "serve": "eleventy --serve",
-    "lint": "eslint src/assets/js .eleventy.js && stylelint \"src/assets/css/**/*.css\"",
-    "prepare": "husky"
+    "lint": "eslint src/assets/js .eleventy.js scripts eslint.config.js && stylelint \"src/assets/css/**/*.css\"",
+    "prepare": "husky",
+    "prebuild": "node scripts/generate-og-image.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.6",
+    "sharp": "^0.35.3",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^39.0.1"
   },
