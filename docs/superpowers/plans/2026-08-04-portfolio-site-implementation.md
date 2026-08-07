@@ -881,7 +881,7 @@ Before writing CSS, invoke the `frontend-design` skill (per the global workflow 
 
 **Layout: sticky identity sidebar, page scroll.** At >=68rem wide *and* >=40rem tall, `main` becomes a two-column grid — a sticky `.hero` column (name, title, location, tagline, contact links, download CTA) beside a column carrying Experience/Skills/Education. Below either threshold it is the untouched single-column mobile stack. Two deliberate rejections: there is **no nested `overflow-y: auto` scroll pane** (the sidebar is `position: sticky` inside normal page scroll, so Ctrl+F, print, scroll restoration and keyboard scrolling all behave natively), and **no tabbed sections** (tabs would hide resume content behind a click, break Ctrl+F across the whole document, and give one repeated panel-swap animation instead of a content-level interaction).
 
-**Signature interaction: Skills cross-filters Experience.** Clicking a skill chip highlights the Experience bullets that skill is tagged against and dims the rest. It answers a question a hiring manager actually has ("where did they use Playwright?") at the sentence level, rather than being decorative motion. The emphasis is carried by the *match* (the neutral bullet tick turns amber and grows from 0.6rem x 1px to 0.95rem x 2px), not by crushing the misses (`opacity: 0.5`, still readable) — which is what keeps it quiet and sidesteps a contrast complaint about the dimmed text. An entry with no matches gets a hollow timeline node.
+**Signature interaction: Skills cross-filters Experience.** Clicking a skill chip highlights the Experience bullets that skill is tagged against and dims the rest. It answers a question a hiring manager actually has ("where did they use Playwright?") at the sentence level, rather than being decorative motion. The emphasis is carried by the *match* (the neutral bullet tick turns amber and grows from 0.6rem x 1px to 0.95rem x 2px), not by crushing the misses (`opacity: 0.62`, still readable and still clearing 4.5:1 text contrast in both themes) — which is what keeps it quiet without inviting a contrast complaint about the dimmed text. An entry with no matches gets a hollow timeline node.
 
 **Nav motion.** Anchor clicks scroll smoothly (`scroll-behavior: smooth`, inside a `prefers-reduced-motion: no-preference` query), and a scroll-spy marks the section currently in view with `aria-current="location"`, which scales a 1px amber underline in from the left under that nav link. Under reduced motion the scroll is an instant jump and the underline appears with no transition — but the spy still marks the current section, because *which section you are in* is information, not animation.
 
@@ -898,6 +898,7 @@ Create `src/assets/css/style.css`:
   --gutter: 1.5rem;
   --radius: 6px;
   --header-h: 3.5rem;
+  --header-measured: 3.5rem;
   --chrome-h: 3.5rem;
   --font-display: "Fraunces", "Georgia", serif;
   --font-body: "Inter", system-ui, sans-serif;
@@ -965,7 +966,7 @@ h3 {
 
 ```
 
-Note on the token set. `--measure`, `--sidebar` and `--gutter` exist because the content column's width is needed in three places (`main`, the sticky header's padding, the filter bar's padding) and they must agree exactly or the header/content misalignment goes straight back the next time one is nudged. `--header-h` is consumed by the filter bar's `top` and by the sidebar's `top`/`max-height`, so the two sticky layers stack without overlapping. `--border` is decorative hairlines with no contrast floor; `--border-strong` is anything WCAG 1.4.11 governs (the theme-toggle boundary, the contact-link underlines) and measures above 3:1 on every surface it sits on in both themes.
+Note on the token set. `--measure`, `--sidebar` and `--gutter` exist because the content column's width is needed in three places (`main`, the sticky header's padding, the filter bar's padding) and they must agree exactly or the header/content misalignment goes straight back the next time one is nudged. `--header-h` is a static constant, read only by `.site-header`'s own `min-height` (Step 2) — nothing else consumes it, and nothing ever rewrites it, which is what keeps it from feeding back into its own measurement. The two things that actually need the header's *live* height — the filter bar's `top` and (via `--chrome-h`) the sidebar's `top`/`max-height` — read `--header-measured`/`--chrome-h` instead, both JS-only tokens kept current by `syncChrome()` (Step 14). `--border` is decorative hairlines with no contrast floor; `--border-strong` is anything WCAG 1.4.11 governs (the theme-toggle boundary, the contact-link underlines) and measures above 3:1 on every surface it sits on in both themes.
 
 Note on `"Georgia"` and `"Inter"` being quoted. Stylelint's `value-keyword-case` rule exempts the `font-family` *property*, but these values live inside custom properties, where it has no way to know they're font names and flags them as mis-cased keywords. Confirmed empirically — unquoted, `npx stylelint` fails with `Expected "Inter" to be "inter"`.
 
@@ -1070,7 +1071,7 @@ Append to `style.css`:
 ```css
 .filter-bar {
   position: sticky;
-  top: var(--header-h);
+  top: var(--header-measured);
   z-index: 9;
   display: flex;
   flex-wrap: wrap;
@@ -1117,9 +1118,9 @@ Append to `style.css`:
 
 ```
 
-This is the strip that appears under the sticky header while a filter is active. It exists for a concrete reason: Skills sits *below* Experience in the scroll order, so clicking a chip changes content that has already scrolled off above it. Without a persistent bar, a visitor who scrolls back down to Skills has no visible indication that a filter is on and no way to clear it without hunting for the pressed chip. `top: var(--header-h)` parks it directly beneath the header; `z-index: 9` keeps it under the header (`z-index: 10`) but above content.
+This is the strip that appears under the sticky header while a filter is active. It exists for a concrete reason: Skills sits *below* Experience in the scroll order, so clicking a chip changes content that has already scrolled off above it. Without a persistent bar, a visitor who scrolls back down to Skills has no visible indication that a filter is on and no way to clear it without hunting for the pressed chip. `top: var(--header-measured)` parks it directly beneath the header; `z-index: 9` keeps it under the header (`z-index: 10`) but above content.
 
-**`--header-h` has to be measured, not just a constant, for the same reason `--chrome-h` does.** At narrow widths the header itself wraps to two lines (Step 11's `flex-wrap: wrap`) and grows past the `3.5rem` default — at ≤360px CSS width it measures 77.8px. If the filter bar's `top` stayed pinned to the static constant while the header actually grew taller, the header (`z-index: 10`) would paint over the bar's own top few pixels (`z-index: 9`), slicing through the filter summary text. `syncChrome()` (Step 14) now writes both `--header-h` and `--chrome-h` from the same measurement of the real header element, kept current by the same `ResizeObserver` already watching it — so the bar's position and the header's actual height can never drift apart, at any width.
+**The bar's `top` tracks a *separate* measured token, `--header-measured`, not `--header-h` — and the distinction is load-bearing, not stylistic.** At narrow widths the header itself wraps to two lines (Step 11's `flex-wrap: wrap`) and grows past the `3.5rem` default — at ≤360px CSS width it measures 77.8px. If the filter bar's `top` stayed pinned to a static constant while the header actually grew taller, the header (`z-index: 10`) would paint over the bar's own top few pixels (`z-index: 9`), slicing through the filter summary text — so the bar needs the header's *real*, live height. But `--header-h` itself is also `.site-header`'s own `min-height` (Step 2) — if `syncChrome()` (Step 14) wrote the measured value back into that same token, the header's floor would ratchet up to whatever it last wrapped to and never shrink back down, even after the viewport widens again, because a `ResizeObserver` can't fire on an element whose size the observer's own write is holding fixed. `--header-measured` is a separate, JS-only token that never feeds into `.site-header`'s own layout — `--header-h` stays the static `3.5rem` constant it always was, and only `--header-measured`/`--chrome-h` get rewritten at runtime.
 
 `.filter-bar[hidden] { display: none }` is load-bearing, not redundant. The bar is `display: flex`, and an explicit `display` value overrides the `hidden` attribute's UA default of `display: none` — without this rule the "hidden" bar renders as an empty amber strip on every page load.
 
@@ -1127,7 +1128,7 @@ This is the strip that appears under the sticky header while a filter is active.
 
 **It has to be measured, not hardcoded, and this is worth stating plainly because a constant looks perfectly adequate right up until it isn't.** An earlier version of this task set `--chrome-h: 6rem` from a fixed rule, sized against a bar holding one or two chips. But the bar is `flex-wrap: wrap` and the filter is multi-select across 14 evidenced chips, so its height grows with the number of active chips and shrinks as the viewport widens. Measured on the real page: the bar is **67px with 3 chips active, 87px with 5, and 108px with all 14**. Against the old 96px constant, three or more active chips below the sidebar breakpoint put the bar's real bottom edge **21-46px past** where the headings had been offset to, and the heading sat behind it — reproducible at 768px, 900px and 1000px, and invisible at wider viewports because more chips fit per row there.
 
-The runtime measurement removes the whole class of bug rather than re-tuning the constant: `--chrome-h` is always `header.offsetHeight + (bar.hidden ? 0 : bar.offsetHeight)`, kept current by a `ResizeObserver` on both elements. Verified across a 3x3 matrix (768/900/1000px x 3/5/14 active chips): no section heading is ever covered, with the tightest clearance at 7.4px — measured after the scroll-reveal's `translateY(8px)` has fully collapsed once the section lands, since that transform temporarily narrows the gap further during the animation itself.
+The runtime measurement removes the whole class of bug rather than re-tuning the constant: `--chrome-h` is always `header.offsetHeight + (bar.hidden ? 0 : bar.offsetHeight)`, kept current by a `ResizeObserver` on both elements. Verified across a 3x3 matrix (768/900/1000px x 3/5/14 active chips): no section heading is ever covered, with the tightest clearance at 7.4px, measured once the scroll-reveal's `translateY(8px)` has fully settled — the transform actually *widens* the gap while the section is still animating in, and clearance narrows monotonically down to its 7.4px floor only after the animation completes, so the settled state is the one worth checking, not the transient one.
 
 `.filter-clear` is styled from a real `<button>` rather than a link because it performs an action rather than navigating; `font: inherit` is needed because buttons don't inherit typography.
 
@@ -1380,7 +1381,7 @@ Append to `style.css`:
 }
 
 .timeline-entry ul li.is-dim {
-  opacity: 0.5;
+  opacity: 0.62;
 }
 
 .timeline-entry.is-zero-match::before {
@@ -1392,7 +1393,7 @@ Append to `style.css`:
 
 Three rules, and that is the entire visual weight of the signature interaction — which is the point. `skill-filter.js` (Step 14) only adds and removes these classes; all appearance lives here.
 
-**Emphasis is on the match, not on the miss.** `.is-match` turns the neutral tick amber and grows it from 0.6rem x 1px to 0.95rem x 2px. `.is-dim` only drops to `opacity: 0.5` — enough to recede, not enough to become unreadable or to look like disabled content. The alternative (dimming hard, e.g. 0.25) would have made the un-matched two-thirds of the resume effectively unreadable while a filter is on, and would have invited a legitimate contrast objection about body text.
+**Emphasis is on the match, not on the miss.** `.is-match` turns the neutral tick amber and grows it from 0.6rem x 1px to 0.95rem x 2px. `.is-dim` drops to `opacity: 0.62` — enough to recede, not enough to become unreadable or to look like disabled content. `0.62` is the actual measured floor, not a round guess: at `0.5` (the original value) light mode's dimmed text measured **3.28:1**, below the 4.5:1 WCAG 1.4.3 requires for body text — dark mode happened to clear it at 4.54:1, but the pair has to pass in both themes together. `0.62` clears both: **4.78:1** light, **6.31:1** dark. The alternative of dimming harder still (e.g. 0.25) would have made the un-matched two-thirds of the resume effectively unreadable while a filter is on, which is the opposite direction from the fix this needed.
 
 `.is-zero-match` hollows the entry's timeline node — background becomes `--bg` with an inset ring — so an entire job with no matching bullets reads as "nothing here" at a glance rather than making the visitor scan six dimmed bullets to work it out.
 
@@ -1783,7 +1784,8 @@ Create `src/assets/js/nav-spy.js`:
   }
 
   function atBottom() {
-    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    var scrollable = document.documentElement.scrollHeight > window.innerHeight;
+    return scrollable && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
   }
 
   function refresh() {
@@ -1834,7 +1836,7 @@ It also does not scroll anything. Smooth scrolling on nav clicks is pure CSS (`s
 
 `rootMargin: "-20% 0px -55% 0px"` shrinks the observation band to roughly the upper-middle of the viewport, so the "current" section is the one you're actually reading rather than whichever one has a pixel on screen. When several sections intersect that band, `refresh()` picks the **last** in document order, not the first — Education is the final section, and once the page bottoms out, Skills can still be technically inside the band while Education has also entered it, so a first-wins tie-break would leave Skills marked current forever. Last-wins reads as "the section closest to what you've scrolled down to."
 
-**Last-wins alone isn't enough, and that's what `atBottom()` is for.** At some viewport heights the document isn't tall enough for Education to ever occupy the 20%-45% band before the page hits its scroll limit — Education simply never enters the intersection band at all, regardless of tie-break order. `atBottom()` checks whether the viewport's bottom edge has reached the document's scroll limit and, if so, forces the *last* target current unconditionally, overriding the intersection-based logic entirely. This needs its own `scroll` listener rather than relying solely on the `IntersectionObserver` callback, since scrolling further within an already-stable intersection state doesn't fire a new IO callback — `atBottom()` has to be re-checked as the user keeps scrolling, not just when a section's intersection state changes. Verified: scrolling to `#skills` leaves exactly one `[aria-current]` link and it is the Skills link; scrolling to the true bottom of the page at 768x1024 (where Education never enters the band) correctly marks Education current.
+**Last-wins alone isn't enough, and that's what `atBottom()` is for.** At some viewport heights the document isn't tall enough for Education to ever occupy the 20%-45% band before the page hits its scroll limit — Education simply never enters the intersection band at all, regardless of tie-break order. `atBottom()` checks whether the viewport's bottom edge has reached the document's scroll limit and, if so, forces the *last* target current unconditionally, overriding the intersection-based logic entirely. This needs its own `scroll` listener rather than relying solely on the `IntersectionObserver` callback, since scrolling further within an already-stable intersection state doesn't fire a new IO callback — `atBottom()` has to be re-checked as the user keeps scrolling, not just when a section's intersection state changes. It first checks the document is actually taller than the viewport at all; on a very tall or heavily zoomed-out screen where the whole page fits without scrolling, "the bottom edge has reached the scroll limit" is trivially true at `scrollY = 0`, which would mark Education current before the visitor has scrolled anywhere. Verified: scrolling to `#skills` leaves exactly one `[aria-current]` link and it is the Skills link; scrolling to the true bottom of the page at 768x1024 (where Education never enters the band) correctly marks Education current; and on a viewport tall enough to fit the whole page, Experience is current at load rather than Education.
 
 `aria-current="location"` rather than `"page"` — the links do not navigate to a different page, they mark a position within this one.
 
@@ -1872,7 +1874,7 @@ Create `src/assets/js/skill-filter.js`:
 
   function syncChrome() {
     var headerHeight = header ? header.offsetHeight : 0;
-    root.style.setProperty("--header-h", headerHeight + "px");
+    root.style.setProperty("--header-measured", headerHeight + "px");
     root.style.setProperty("--chrome-h", chromeHeight() + "px");
   }
 
