@@ -64,6 +64,10 @@ h3 {
   white-space: nowrap;
 }
 
+html {
+  scroll-padding-top: calc(var(--chrome-h) + 1rem);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
@@ -573,7 +577,7 @@ button.chip:focus-visible {
   }
 }
 
-@media (width >= 40rem) {
+@media (min-width: 40rem) {
   .skill-group {
     grid-template-columns: 8rem 1fr;
     gap: 1.5rem;
@@ -581,7 +585,7 @@ button.chip:focus-visible {
   }
 }
 
-@media (width >= 68rem) and (height >= 40rem) {
+@media (min-width: 68rem) and (min-height: 40rem) {
   main {
     display: grid;
     grid-template-columns: var(--sidebar) minmax(0, var(--measure));
@@ -632,7 +636,7 @@ button.chip:focus-visible {
   }
 }
 
-@media (width <= 640px) {
+@media (max-width: 640px) {
   .site-header {
     flex-wrap: wrap;
     row-gap: 0.5rem;

@@ -15,12 +15,12 @@ layout: base.njk
 
 <section id="experience">
   <h2>Experience</h2>
-  <ol class="timeline">
+  <ol class="timeline" role="list">
     {% for job in resume.experience %}
     <li class="timeline-entry" data-company="{{ job.company }}">
       <h3>{{ job.role }}</h3>
       <p class="timeline-meta">{{ job.company }} · {{ job.dates }}</p>
-      <ul>
+      <ul role="list">
         {% for bullet in job.bullets %}
         <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
         {% endfor %}
@@ -35,7 +35,7 @@ layout: base.njk
   {% for group in resume.skills %}
   <div class="skill-group">
     <h3>{{ group.category }}</h3>
-    <ul class="skill-chips">
+    <ul class="skill-chips" role="list">
       {% for item in group.items %}
       {% if item | isEvidenced(resume.experience) %}
       <li><button type="button" class="chip" data-skill="{{ item }}" aria-pressed="false">{{ item }}</button></li>
