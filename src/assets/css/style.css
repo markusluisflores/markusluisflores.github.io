@@ -659,6 +659,21 @@ button.chip:focus-visible {
 }
 
 @media print {
+  :root,
+  :root[data-theme="dark"] {
+    --bg: #faf9f7;
+    --surface: #fff;
+    --text: #1c1a17;
+    --text-muted: #6b665f;
+    --border: #e5e0d8;
+    --border-strong: #8d8377;
+    --accent: #b5762a;
+    --accent-strong: #915e22;
+    --accent-hover: #7c511d;
+    --accent-soft: #f6ecdc;
+    --accent-contrast: #fff;
+  }
+
   #experience,
   #skills,
   #education {

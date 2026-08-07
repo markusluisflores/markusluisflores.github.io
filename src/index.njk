@@ -13,7 +13,7 @@ layout: base.njk
   <a class="download-resume" href="/assets/resume.pdf" download target="_blank" rel="noopener noreferrer">Download Resume (PDF)</a>
 </div>
 
-<section id="experience" class="experience">
+<section id="experience">
   <h2>Experience</h2>
   <ol class="timeline">
     {% for job in resume.experience %}
@@ -30,7 +30,7 @@ layout: base.njk
   </ol>
 </section>
 
-<section id="skills" class="skills">
+<section id="skills">
   <h2>Skills</h2>
   {% for group in resume.skills %}
   <div class="skill-group">
@@ -48,7 +48,7 @@ layout: base.njk
   {% endfor %}
 </section>
 
-<section id="education" class="education">
+<section id="education">
   <h2>Education</h2>
   {% for edu in resume.education %}
   <div class="education-entry">
