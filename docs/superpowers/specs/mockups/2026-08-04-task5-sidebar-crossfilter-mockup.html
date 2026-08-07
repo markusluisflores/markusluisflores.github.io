@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Task 5 — Sidebar + Cross-Filter Mockup (click a Testing/Agile/Git/Docker/Java chip)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --measure: 45rem;
+    --gutter: 1.5rem;
+    --sidebar: 21rem;
+    --radius: 6px;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --bg: #faf9f7;
+    --surface: #fff;
+    --text: #1c1a17;
+    --text-muted: #75706a;
+    --border: #e5e0d8;
+    --border-strong: #a89d90;
+    --accent: #b5762a;
+    --accent-hover: #935e1f;
+    --accent-soft: #f6ecdc;
+    --accent-contrast: #fff;
+    --header-h: 3.5rem;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); line-height: 1.6; }
+  .banner { background: #1c1a17; color: #f3efe9; font-family: var(--font-body); font-size: 13px; padding: 10px 20px; text-align: center; }
+  .banner b { color: #e8a94d; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; gap: 1rem; justify-content: space-between; align-items: center;
+    padding: 0.7rem calc(max(0px, (100% - var(--measure) - var(--sidebar) - 4rem) / 2) + var(--gutter));
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .site-nav { display: flex; gap: 1.5rem; }
+  .site-nav a { color: var(--text-muted); font-size: 0.8125rem; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; }
+  .theme-toggle { padding: 0.3rem 0.5rem; background: none; border: 1px solid var(--border-strong); border-radius: var(--radius); cursor: pointer; }
+
+  .filter-bar {
+    position: sticky; top: var(--header-h); z-index: 9;
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.6rem calc(max(0px, (100% - var(--measure) - var(--sidebar) - 4rem) / 2) + var(--gutter));
+    background: var(--accent-soft); border-bottom: 1px solid var(--border);
+    font-size: 0.8125rem;
+  }
+  .filter-bar[hidden] { display: none; }
+  .filter-bar .active-skill { font-weight: 600; color: var(--accent); }
+  .filter-bar button { border: none; background: none; color: var(--text-muted); cursor: pointer; text-decoration: underline; font-size: 0.8125rem; padding: 0; }
+
+  main {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, var(--measure));
+    gap: 3rem;
+    max-width: none;
+    justify-content: center;
+    padding: 2.5rem var(--gutter) 5rem;
+  }
+
+  .hero {
+    grid-column: 1; grid-row: 1 / -1;
+    position: sticky; top: calc(var(--header-h) + 2rem);
+    align-self: start;
+    max-height: calc(100vh - var(--header-h) - 4rem);
+    overflow-y: auto;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.25rem; line-height: 1.05; }
+  .hero-title { color: var(--text-muted); font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.15rem; }
+  .hero-location { color: var(--text-muted); font-size: 0.8125rem; margin: 0 0 1.25rem; }
+  .hero-tagline::before { content: ""; display: block; width: 3rem; height: 3px; background: var(--accent); margin-bottom: 1.25rem; }
+  .hero-tagline { font-size: 0.9375rem; margin: 0 0 1.5rem; }
+  .hero-links { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+  .contact-link { display: inline-flex; gap: 0.5rem; align-items: center; color: var(--text); text-decoration: none; font-size: 0.875rem; }
+  .contact-link span { border-bottom: 1px solid var(--border-strong); }
+  .download-cta { display: inline-block; padding: 0.6rem 1rem; background: var(--accent); color: var(--accent-contrast); border-radius: var(--radius); text-decoration: none; font-size: 0.8125rem; font-weight: 600; }
+  .download-cta:hover { background: var(--accent-hover); }
+
+  section { grid-column: 2; padding-bottom: 4rem; }
+  section:last-of-type { padding-bottom: 0; }
+  section > h2 { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.25rem; margin: 0 0 1.75rem; }
+
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline-entry { position: relative; padding: 0 0 2.5rem 1.5rem; border-left: 1px solid var(--border); transition: border-color .18s ease; }
+  .timeline-entry:last-child { padding-bottom: 0; }
+  .timeline-entry::before {
+    content: ""; position: absolute; top: 0.4rem; left: -4.5px; width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px var(--bg);
+    transition: background .18s ease, box-shadow .18s ease;
+  }
+  .timeline-entry.zero-match::before { background: var(--bg); box-shadow: 0 0 0 4px var(--bg), inset 0 0 0 1.5px var(--border-strong); }
+  .timeline-meta { color: var(--text-muted); font-size: 0.8125rem; margin: 0 0 0.3rem; }
+  .timeline-entry h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; margin: 0 0 0.9rem; }
+  .timeline-entry ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; max-width: 58ch; }
+  .timeline-entry li { position: relative; padding-left: 1.4rem; font-size: 0.9375rem; transition: opacity .18s ease; }
+  .timeline-entry li::before { content: ""; position: absolute; top: 0.75em; left: 0; width: 0.6rem; height: 1px; background: var(--border-strong); transition: background .18s ease, width .18s ease, height .18s ease; }
+  .timeline-entry li.match::before { background: var(--accent); width: 0.95rem; height: 2px; }
+  .timeline-entry li.dim { opacity: 0.5; }
+
+  .skill-group { display: grid; gap: 0.5rem; padding: 1rem 0; }
+  .skill-group:first-of-type { padding-top: 0; }
+  .skill-group + .skill-group { border-top: 1px solid var(--border); }
+  .skill-group h3 { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .skill-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; }
+  .chip { padding: 0.28rem 0.6rem; font: inherit; font-size: 0.8125rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); }
+  span.chip { cursor: default; }
+  button.chip { cursor: pointer; transition: border-color .15s ease, color .15s ease, background-color .15s ease; }
+  button.chip:hover { border-color: var(--accent); color: var(--accent); }
+  button.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+  .education-entry { padding: 1rem 0; }
+  .education-entry:first-of-type { padding-top: 0; }
+  .education-entry + .education-entry { border-top: 1px solid var(--border); }
+  .education-entry h3 { margin: 0 0 0.3rem; font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+  .education-entry p { margin: 0; color: var(--text-muted); font-size: 0.8125rem; }
+  .education-note { display: inline-block; margin-top: 0.5rem; padding: 0.15rem 0.5rem; background: var(--accent-soft); border-radius: var(--radius); color: var(--accent); font-size: 0.75rem; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+  @media (max-width: 68rem) {
+    main { grid-template-columns: 1fr; }
+    .hero { position: static; grid-row: auto; max-height: none; overflow: visible; margin-bottom: 3rem; }
+    section { grid-column: 1; }
+    .site-header, .filter-bar { padding-left: var(--gutter); padding-right: var(--gutter); }
+  }
+</style>
+</head>
+<body>
+  <div class="banner">Mockup — click a highlighted chip in <b>Skills</b> (Testing, Agile Scrum Methodology, Selenium, Java, Git, Docker) to see the cross-filter. Bullet tags below are placeholder examples for this demo, not final.</div>
+
+  <header class="site-header">
+    <nav class="site-nav"><a href="#experience">Experience</a><a href="#skills">Skills</a><a href="#education">Education</a></nav>
+    <button class="theme-toggle" type="button" aria-pressed="false">◐</button>
+  </header>
+
+  <div class="filter-bar" id="filterBar" hidden>
+    <span>Filtering by <span class="active-skill" id="activeSkillLabel"></span></span>
+    <span id="matchCount"></span>
+    <button type="button" id="clearFilter">Clear filter</button>
+  </div>
+  <p class="sr-only" role="status" id="liveRegion"></p>
+
+  <main>
+    <div class="hero">
+      <h1>Markus Luis Flores</h1>
+      <p class="hero-title">Software Developer</p>
+      <p class="hero-location">Calgary, Alberta, Canada</p>
+      <p class="hero-tagline">SDET focused on reliable, well-tested systems and clean automation.</p>
+      <div class="hero-links">
+        <a class="contact-link" href="#"><span>✉ Email</span></a>
+        <a class="contact-link" href="#"><span>⌥ GitHub</span></a>
+        <a class="contact-link" href="#"><span>in LinkedIn</span></a>
+      </div>
+      <a class="download-cta" href="#">Download Resume (PDF)</a>
+    </div>
+
+    <section id="experience">
+      <h2>Experience</h2>
+      <ul class="timeline">
+        <li class="timeline-entry">
+          <p class="timeline-meta">RBC · May 2025 – Present</p>
+          <h3>SDET – Quality Engineer</h3>
+          <ul>
+            <li>Develop and execute comprehensive test strategies and technical solutions for Wealth Management Technology.</li>
+            <li data-skills="Agile Scrum Methodology">Collaborate in Agile ceremonies to align QA efforts with project deliverables.</li>
+            <li data-skills="Selenium|Playwright">Design optimized test cases, leveraging automation frameworks to support end-to-end and integration testing.</li>
+            <li data-skills="Selenium">Automate and maintain regression suites using Selenium and internal testing tools.</li>
+            <li data-skills="Jira">Manage test execution and defect triage, providing test documentation and status updates to stakeholders.</li>
+            <li data-skills="Docker">Support server deployments by configuring environments, validating builds, and performing post-deployment checks.</li>
+          </ul>
+        </li>
+        <li class="timeline-entry">
+          <p class="timeline-meta">Infor PSSC, Inc. · Dec 2018 – Jun 2023</p>
+          <h3>Software Engineer</h3>
+          <ul>
+            <li data-skills="Java">Designed and developed new features and enhancements for Infor's SaaS HCM platform based on business requirements.</li>
+            <li data-skills="Agile Scrum Methodology|Java">Maintained and improved existing HCM modules using Agile and object-oriented programming practices.</li>
+            <li data-skills="Git">Led code reviews through meetings, Crucible, and GitLab. Maintained release versions using AccuRev and Git.</li>
+            <li>Authored functional and technical design documents, user documentation, and client knowledge-transfer materials.</li>
+            <li>Collaborated with Business Analysts and Product Owners to influence design decisions and deliver customer solutions.</li>
+            <li data-skills="Selenium">Supported QA teams by preparing detailed test cases, contributing to automation scripts, and ensuring coverage.</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <div class="skill-group">
+        <h3>Frontend</h3>
+        <ul class="skill-chips">
+          <li><span class="chip">HTML</span></li><li><span class="chip">CSS</span></li><li><span class="chip">React.js</span></li><li><span class="chip">TypeScript</span></li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <h3>Backend</h3>
+        <ul class="skill-chips">
+          <li><button class="chip" type="button" data-skill="Java" aria-pressed="false">Java</button></li><li><span class="chip">SQL</span></li><li><button class="chip" type="button" data-skill="Docker" aria-pressed="false">Docker</button></li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <h3>Testing</h3>
+        <ul class="skill-chips">
+          <li><button class="chip" type="button" data-skill="Selenium" aria-pressed="false">Selenium</button></li>
+          <li><button class="chip" type="button" data-skill="Playwright" aria-pressed="false">Playwright</button></li>
+          <li><span class="chip">Postman</span></li>
+        </ul>
+      </div>
+      <div class="skill-group">
+        <h3>Others</h3>
+        <ul class="skill-chips">
+          <li><button class="chip" type="button" data-skill="Git" aria-pressed="false">Git</button></li>
+          <li><button class="chip" type="button" data-skill="Jira" aria-pressed="false">Jira</button></li>
+          <li><button class="chip" type="button" data-skill="Agile Scrum Methodology" aria-pressed="false">Agile Scrum Methodology</button></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <div class="education-entry">
+        <h3>Diploma in Software Development</h3>
+        <p>Southern Alberta Institute of Technology (SAIT) · Sep 2023 – Apr 2025</p>
+        <span class="education-note">With Honours</span>
+      </div>
+      <div class="education-entry">
+        <h3>Bachelor of Science in Information Technology</h3>
+        <p>De La Salle University · May 2014 – Aug 2018</p>
+        <span class="education-note">5x Dean's Lister</span>
+      </div>
+    </section>
+  </main>
+
+<script>
+(function () {
+  var chips = Array.prototype.slice.call(document.querySelectorAll('button.chip'));
+  var bullets = Array.prototype.slice.call(document.querySelectorAll('.timeline-entry li[data-skills]'));
+  var entries = Array.prototype.slice.call(document.querySelectorAll('.timeline-entry'));
+  var active = new Set();
+  var filterBar = document.getElementById('filterBar');
+  var activeLabel = document.getElementById('activeSkillLabel');
+  var matchCount = document.getElementById('matchCount');
+  var liveRegion = document.getElementById('liveRegion');
+  var clearBtn = document.getElementById('clearFilter');
+  var hasScrolledForFilter = false;
+
+  function bulletSkills(li) { return (li.getAttribute('data-skills') || '').split('|').filter(Boolean); }
+
+  function render(previewSkill) {
+    var effective = previewSkill ? new Set([previewSkill]) : active;
+    var anyActive = effective.size > 0;
+    var matched = 0, total = bullets.length;
+
+    bullets.forEach(function (li) {
+      if (!anyActive) { li.classList.remove('match', 'dim'); return; }
+      var skills = bulletSkills(li);
+      var isMatch = skills.some(function (s) { return effective.has(s); });
+      li.classList.toggle('match', isMatch);
+      li.classList.toggle('dim', !isMatch);
+      if (isMatch) matched++;
+    });
+
+    entries.forEach(function (entry) {
+      if (!anyActive) { entry.classList.remove('zero-match'); return; }
+      var lis = Array.prototype.slice.call(entry.querySelectorAll('li'));
+      var hasMatch = lis.some(function (li) { return li.classList.contains('match'); });
+      entry.classList.toggle('zero-match', !hasMatch);
+    });
+
+    if (!previewSkill) {
+      filterBar.hidden = active.size === 0;
+      if (active.size > 0) {
+        activeLabel.textContent = Array.from(active).join(', ');
+        matchCount.textContent = matched + ' of ' + total + ' bullets highlighted';
+        liveRegion.textContent = 'Filtering Experience by ' + Array.from(active).join(', ') + '. ' + matched + ' of ' + total + ' bullets highlighted.';
+      } else {
+        liveRegion.textContent = 'Filter cleared. Showing all ' + total + ' bullets.';
+      }
+    }
+  }
+
+  chips.forEach(function (chip) {
+    var skill = chip.getAttribute('data-skill');
+
+    chip.addEventListener('pointerenter', function () {
+      if (active.size === 0) render(skill);
+    });
+    chip.addEventListener('pointerleave', function () {
+      if (active.size === 0) render(null);
+    });
+
+    chip.addEventListener('click', function () {
+      var wasEmpty = active.size === 0;
+      if (active.has(skill)) { active.delete(skill); chip.setAttribute('aria-pressed', 'false'); }
+      else { active.add(skill); chip.setAttribute('aria-pressed', 'true'); }
+      chips.forEach(function (c) {
+        if (!active.has(c.getAttribute('data-skill'))) c.setAttribute('aria-pressed', 'false');
+      });
+      render(null);
+      if (wasEmpty && active.size > 0 && !hasScrolledForFilter) {
+        document.getElementById('experience').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        hasScrolledForFilter = true;
+      }
+      if (active.size === 0) hasScrolledForFilter = false;
+    });
+  });
+
+  clearBtn.addEventListener('click', function () {
+    active.clear();
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+    render(null);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && active.size > 0) {
+      active.clear();
+      chips.forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      render(null);
+    }
+  });
+})();
+</script>
+</body>
+</html>
