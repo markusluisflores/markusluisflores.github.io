@@ -1,0 +1,72 @@
+{% import "contact-links.njk" as contact %}
+{% set pageTitle = title or (resume.name + " — " + resume.title) %}
+{% set siteUrl = "https://markusluisflores.github.io" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ pageTitle }}</title>
+  <meta name="description" content="{{ description or resume.tagline }}">
+  <meta property="og:title" content="{{ pageTitle }}">
+  <meta property="og:description" content="{{ description or resume.tagline }}">
+  <meta property="og:image" content="{{ siteUrl }}/assets/og-image.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="{{ siteUrl }}/">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <noscript>
+    <style>
+      #experience, #skills, #education { opacity: 1 !important; transform: none !important; }
+      button.chip { cursor: default; }
+      button.chip:hover { border-color: var(--border); color: var(--text-muted); }
+    </style>
+  </noscript>
+  <script>
+    (function () {
+      var stored = localStorage.getItem("theme");
+      var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="#experience">Experience</a>
+      <a href="#skills">Skills</a>
+      <a href="#education">Education</a>
+    </nav>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
+  </header>
+
+  <div class="filter-bar" data-filter-bar hidden>
+    <p class="filter-summary">Filtering Experience by <span class="filter-skills" data-filter-skills></span></p>
+    <p class="filter-count" data-filter-count></p>
+    <button type="button" class="filter-clear" data-filter-clear>Clear filter</button>
+  </div>
+  <p class="sr-only" role="status" data-filter-status></p>
+
+  <main>
+    {{ content | safe }}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      {{ contact.contactLinks(resume.links) }}
+    </div>
+    <a class="download-resume" href="/assets/resume.pdf" download target="_blank" rel="noopener noreferrer">Download Resume (PDF)</a>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
+  </footer>
+
+  <script src="/assets/js/theme-toggle.js"></script>
+  <script src="/assets/js/scroll-reveal.js"></script>
+  <script src="/assets/js/nav-spy.js"></script>
+  <script src="/assets/js/skill-filter.js"></script>
+</body>
+</html>

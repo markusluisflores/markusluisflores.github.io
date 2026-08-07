@@ -1,1 +1,60 @@
-<p>Under construction.</p>
+---
+layout: base.njk
+---
+{% import "contact-links.njk" as contact %}
+<div class="hero">
+  <h1>{{ resume.name }}</h1>
+  <p class="hero-title">{{ resume.title }}</p>
+  <p class="hero-location">{{ resume.location }}</p>
+  <p class="hero-tagline">{{ resume.tagline }}</p>
+  <div class="hero-links">
+    {{ contact.contactLinks(resume.links) }}
+  </div>
+  <a class="download-resume" href="/assets/resume.pdf" download target="_blank" rel="noopener noreferrer">Download Resume (PDF)</a>
+</div>
+
+<section id="experience" class="experience">
+  <h2>Experience</h2>
+  <ol class="timeline">
+    {% for job in resume.experience %}
+    <li class="timeline-entry" data-company="{{ job.company }}">
+      <h3>{{ job.role }}</h3>
+      <p class="timeline-meta">{{ job.company }} · {{ job.dates }}</p>
+      <ul>
+        {% for bullet in job.bullets %}
+        <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section id="skills" class="skills">
+  <h2>Skills</h2>
+  {% for group in resume.skills %}
+  <div class="skill-group">
+    <h3>{{ group.category }}</h3>
+    <ul class="skill-chips">
+      {% for item in group.items %}
+      {% if item | isEvidenced(resume.experience) %}
+      <li><button type="button" class="chip" data-skill="{{ item }}" aria-pressed="false">{{ item }}</button></li>
+      {% else %}
+      <li><span class="chip">{{ item }}</span></li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</section>
+
+<section id="education" class="education">
+  <h2>Education</h2>
+  {% for edu in resume.education %}
+  <div class="education-entry">
+    <h3>{{ edu.degree }}</h3>
+    <p>{{ edu.school }} · {{ edu.location }} · {{ edu.dates }}</p>
+    {% if edu.note %}<p class="education-note">{{ edu.note }}</p>{% endif %}
+  </div>
+  {% endfor %}
+</section>
