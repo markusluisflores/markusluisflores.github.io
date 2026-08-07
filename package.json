@@ -2,7 +2,6 @@
   "name": "markusluisflores.github.io",
   "version": "1.0.0",
   "description": "Personal resume and portfolio site",
-  "main": "index.js",
   "scripts": {
     "build": "eleventy",
     "serve": "eleventy --serve",
@@ -11,8 +10,6 @@
     "prebuild": "node scripts/generate-og-image.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "overrides": {
     "tmp": "^0.2.6"
   },

@@ -9,6 +9,8 @@ npm install
 npm run serve
 ```
 
+Note: [gitleaks](https://github.com/gitleaks/gitleaks#installing) is required for the pre-commit hook — install via `winget install Gitleaks.Gitleaks` (Windows), `brew install gitleaks` (macOS), or your platform's package manager.
+
 ## Branch Naming
 
 | Type    | Pattern               | Example                 |
