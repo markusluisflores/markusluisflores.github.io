@@ -1,2 +1,6 @@
 docs/journal/
 docs/project-reviewer.md
+node_modules/
+_site/
+.cache/
+.lighthouseci/
