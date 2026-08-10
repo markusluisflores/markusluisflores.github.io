@@ -1,0 +1,45 @@
+{
+  "name": "markusluisflores.github.io",
+  "version": "1.0.0",
+  "description": "Personal resume and portfolio site",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve",
+    "lint": "eslint src/assets/js .eleventy.js scripts eslint.config.js && stylelint \"src/assets/css/**/*.css\"",
+    "prepare": "husky",
+    "prebuild": "node scripts/generate-og-image.js"
+  },
+  "keywords": [],
+  "overrides": {
+    "tmp": "^0.2.6"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "@eslint/js": "^9.39.5",
+    "@lhci/cli": "^0.15.1",
+    "eslint": "^9.39.5",
+    "html-validate": "^10.0.0",
+    "husky": "^9.1.7",
+    "linkinator": "^7.6.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.6",
+    "sharp": "^0.35.3",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}

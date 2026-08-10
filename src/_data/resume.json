@@ -1,0 +1,156 @@
+{
+  "name": "Markus Luis Flores",
+  "title": "Software Developer",
+  "tagline": "Software Developer with more than 5 years of experience developing and maintaining large-scale SaaS applications, from full-stack work to quality engineering. Writes clean, efficient code and designs business-oriented software that caters to the needs of the user.",
+  "location": "Calgary, Alberta, Canada",
+  "links": {
+    "email": "markuslsflores@gmail.com",
+    "github": "https://github.com/markusluisflores",
+    "linkedin": "https://www.linkedin.com/in/markusluisflores/"
+  },
+  "experience": [
+    {
+      "role": "SDET – Quality Engineer",
+      "company": "Royal Bank of Canada (RBC)",
+      "dates": "May 2025 – Present",
+      "bullets": [
+        {
+          "text": "Develop and execute comprehensive test strategies and technical solutions for Wealth Management Technology."
+        },
+        {
+          "text": "Collaborate in Agile ceremonies to align QA efforts with project deliverables.",
+          "skills": ["Agile Scrum Methodology"]
+        },
+        {
+          "text": "Design optimized test cases for end-to-end and integration testing, using model-based design tools (ConformIQ, Hexawise) and, more recently, AI-assisted design with Copilot driven by Jira requirements.",
+          "skills": ["ConformIQ", "Hexawise", "Copilot"]
+        },
+        {
+          "text": "Automate and maintain regression suites using Playwright and internal testing tools.",
+          "skills": ["Playwright"]
+        },
+        {
+          "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
+          "skills": ["Jira", "qTest"]
+        },
+        {
+          "text": "Support QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy. Validate successful rollouts and check pod health and logs after each deployment.",
+          "skills": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+        }
+      ]
+    },
+    {
+      "role": "Software Engineer",
+      "company": "Infor PSSC, Inc.",
+      "dates": "Dec 2018 – Jun 2023",
+      "bullets": [
+        {
+          "text": "Designed and developed new features and enhancements for Infor's SaaS Human Capital Management (HCM) platform based on business requirements.",
+          "skills": ["Landmark Pattern Language (LPL)"]
+        },
+        {
+          "text": "Maintained and improved existing HCM modules using Agile and object-oriented programming (OOP) practices.",
+          "skills": ["Agile Scrum Methodology", "Landmark Pattern Language (LPL)"]
+        },
+        {
+          "text": "Led code reviews through meetings, Crucible, and GitLab. Maintained release version code using AccuRev and Git.",
+          "skills": ["Git", "AccuRev"]
+        },
+        {
+          "text": "Authored functional and technical design documents, user documentation, and client knowledge transfer (KT) materials."
+        },
+        {
+          "text": "Collaborated with Business Analysts and Product Owners to influence design decisions and deliver customer solutions.",
+          "skills": ["Agile Scrum Methodology"]
+        },
+        {
+          "text": "Supported QA teams by preparing detailed test cases, contributing to automation scripts, and ensuring coverage for functional and regression testing.",
+          "skills": ["Business Logic Testing (BLT)"]
+        }
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "category": "Frontend",
+      "items": [
+        "HTML",
+        "CSS",
+        "Tailwind CSS",
+        "React.js",
+        "Next.js",
+        "JavaScript",
+        "TypeScript",
+        "Mantine"
+      ]
+    },
+    {
+      "category": "Backend",
+      "items": [
+        "Java",
+        "PHP",
+        "Node.js",
+        "SQL",
+        "NoSQL",
+        "Docker",
+        "Landmark Pattern Language (LPL)"
+      ]
+    },
+    { "category": "AI Tools", "items": ["Claude Code", "Copilot", "Cursor", "n8n"] },
+    {
+      "category": "Testing",
+      "items": [
+        "Playwright",
+        "Selenium",
+        "Postman",
+        "qTest",
+        "Business Logic Testing (BLT)",
+        "ConformIQ",
+        "Hexawise"
+      ]
+    },
+    {
+      "category": "DevOps",
+      "items": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+    },
+    {
+      "category": "Others",
+      "items": [
+        "Git",
+        "RESTful API",
+        "Jira",
+        "Trello",
+        "Confluence",
+        "Agile Scrum Methodology",
+        "AccuRev"
+      ]
+    },
+    {
+      "category": "Soft Skills",
+      "items": [
+        "Problem-solving",
+        "Detail-oriented",
+        "Critical thinking",
+        "Adaptability",
+        "Communication",
+        "Collaboration/Teamwork"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Diploma in Software Development",
+      "school": "Southern Alberta Institute of Technology (SAIT)",
+      "location": "Calgary, Alberta",
+      "dates": "Sep 2023 – Apr 2025",
+      "note": "With Honours"
+    },
+    {
+      "degree": "Bachelor of Science in Information Technology",
+      "school": "De La Salle University",
+      "location": "Manila, Philippines",
+      "dates": "May 2014 – Aug 2018",
+      "note": "5x Dean's Lister"
+    }
+  ]
+}
