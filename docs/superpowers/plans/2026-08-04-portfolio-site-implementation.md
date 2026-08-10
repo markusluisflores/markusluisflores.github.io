@@ -1747,7 +1747,7 @@ Create `src/assets/js/scroll-reveal.js`:
         }
       });
     },
-    { threshold: 0.15 }
+    { threshold: 0 }
   );
 
   sections.forEach(function (section) {
@@ -1757,6 +1757,8 @@ Create `src/assets/js/scroll-reveal.js`:
 ```
 
 Three fallback paths, each deliberate: under `prefers-reduced-motion: reduce`, skip entirely (Step 10's CSS leaves the sections visible in that case, so there is nothing to reveal). Without `IntersectionObserver`, mark everything visible immediately rather than leaving sections permanently hidden. `unobserve` after the first trigger — this is a one-time reveal per section, not a repeat-on-every-scroll-past animation.
+
+**`threshold` is `0`, not a fractional ratio like `0.15`.** An earlier draft used `0.15` — fire once 15% of the section is visible. That breaks for any section taller than the viewport can show 15% of at once: `#experience` measures roughly 2167px tall, so 15% of it is over 325px, more than the entire viewport at 320x256 (the WCAG 2.1 SC 1.4.10 Reflow test viewport, and equivalent to 400% zoom on a 1280x1024 display). At that viewport `intersectionRatio` can never cross 0.15, `isIntersecting` never becomes `true`, the section is `unobserve`d only on trigger — which never happens — and it stays `opacity: 0` forever. Confirmed empirically: opaque at 320x360, permanently `opacity: 0` at 320x256, 320x300, and 280x320. `threshold: 0` fires as soon as any part of the section enters the viewport at all, which cannot fail this way regardless of section height or viewport size — the same value `nav-spy.js` (Step 13) already uses for its own IntersectionObserver, for the same reason.
 
 - [ ] **Step 13: Create the nav scroll-spy script**
 
