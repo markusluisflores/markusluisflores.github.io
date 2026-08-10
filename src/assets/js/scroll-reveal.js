@@ -21,7 +21,7 @@
         }
       });
     },
-    { threshold: 0.15 }
+    { threshold: 0 }
   );
 
   sections.forEach(function (section) {

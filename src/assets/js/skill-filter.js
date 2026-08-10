@@ -19,8 +19,8 @@
 
   // The filter bar is a second sticky layer and it wraps, so its height depends
   // on how many chips are active and how wide the viewport is. Measure it rather
-  // than assume: --chrome-h drives the sidebar's offset and every section's and
-  // entry's scroll-margin-top, and a stale value hides headings behind the bar.
+  // than assume: --chrome-h drives the sidebar's offset and the global
+  // scroll-padding-top rule on <html>, and a stale value hides headings behind the bar.
   function chromeHeight() {
     return (header ? header.offsetHeight : 0) + (bar.hidden ? 0 : bar.offsetHeight);
   }
