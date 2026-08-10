@@ -163,6 +163,8 @@ html {
   background: var(--accent-soft);
   border-bottom: 1px solid var(--border);
   font-size: 0.8125rem;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 .filter-bar[hidden] {
