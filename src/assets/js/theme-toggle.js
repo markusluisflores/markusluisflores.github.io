@@ -14,7 +14,14 @@
 
   function setTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // Storage may be unavailable (e.g. "Block all cookies", sandboxed
+      // iframes). The theme should still visually change and the toggle
+      // buttons should still reflect it correctly, even if the choice
+      // won't persist across reloads in that browsing context.
+    }
     updateToggleState();
   }
 
