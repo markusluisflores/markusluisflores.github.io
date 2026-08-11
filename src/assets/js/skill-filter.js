@@ -126,6 +126,18 @@
     announce(paint(null));
   }
 
+  // Older engines that lack :focus-visible support throw a SyntaxError from
+  // matches() on an unrecognized pseudo-class, even though matches() itself
+  // exists - treat that as "not a keyboard focus" rather than letting it break
+  // the clear button.
+  function isFocusVisible(el) {
+    try {
+      return typeof el.matches === "function" && el.matches(":focus-visible");
+    } catch {
+      return false;
+    }
+  }
+
   // Clearing hides the bar. If focus was inside it AND that focus is the kind
   // a keyboard user relies on (:focus-visible) that focus would be destroyed
   // and fall to <body>, stranding a keyboard user at the top of the document.
@@ -136,9 +148,7 @@
   // behavior meant only for keyboard users, jumping the page unexpectedly.
   function clearAll() {
     var focusWasInBar =
-      bar.contains(document.activeElement) &&
-      typeof document.activeElement.matches === "function" &&
-      document.activeElement.matches(":focus-visible");
+      bar.contains(document.activeElement) && isFocusVisible(document.activeElement);
     active = [];
     chips.forEach(function (chip) {
       chip.setAttribute("aria-pressed", "false");
