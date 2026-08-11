@@ -19,7 +19,7 @@
     "@commitlint/config-conventional": "^20.5.3",
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
-    "eslint": "^9.39.5",
+    "eslint": "^10.8.1",
     "html-validate": "^10.0.0",
     "husky": "^9.1.7",
     "linkinator": "^7.6.1",
