@@ -126,12 +126,19 @@
     announce(paint(null));
   }
 
-  // Clearing hides the bar. If focus was inside it (i.e. the visitor used the
-  // Clear button) that focus would be destroyed and fall to <body>, stranding a
-  // keyboard user at the top of the document. Return it to the chip they last
-  // toggled — the control that put the bar there in the first place.
+  // Clearing hides the bar. If focus was inside it AND that focus is the kind
+  // a keyboard user relies on (:focus-visible) that focus would be destroyed
+  // and fall to <body>, stranding a keyboard user at the top of the document.
+  // Return it to the chip they last toggled. Checking :focus-visible, not just
+  // document.activeElement, matters: a mouse click on Clear also sets
+  // activeElement to the button (without a visible ring), and without this
+  // check that mouse click would trigger the same restore-focus-and-scroll
+  // behavior meant only for keyboard users, jumping the page unexpectedly.
   function clearAll() {
-    var focusWasInBar = bar.contains(document.activeElement);
+    var focusWasInBar =
+      bar.contains(document.activeElement) &&
+      typeof document.activeElement.matches === "function" &&
+      document.activeElement.matches(":focus-visible");
     active = [];
     chips.forEach(function (chip) {
       chip.setAttribute("aria-pressed", "false");
@@ -142,10 +149,13 @@
     }
   }
 
-  // Scroll to the first matching bullet's entry, not to the top of Experience.
-  // Filtering by a skill that only appears in the lower entry used to land the
-  // reader on the upper one, which by then is fully dimmed with a hollow node —
-  // all of the negative signal and none of the positive.
+  // Scroll to the first matching bullet itself, not just its entry. Scrolling
+  // to the entry only guarantees the company/role heading is visible - on a
+  // short viewport with a long bullet list, the actual matched (amber-ticked)
+  // bullet can still land below the fold, which defeats the point of the
+  // interaction (the visitor sees the entry but not the evidence). Scrolling
+  // to the li directly, relying on the global scroll-padding-top rule on
+  // <html> for the sticky-chrome offset, keeps the match itself on screen.
   function revealFirstMatch() {
     var li = document.querySelector(".timeline-entry li.is-match");
     if (!li) {
@@ -155,8 +165,7 @@
     if (box.top >= chromeHeight() && box.bottom <= window.innerHeight) {
       return;
     }
-    var entry = li.closest(".timeline-entry") || li;
-    entry.scrollIntoView({
+    li.scrollIntoView({
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
       block: "start",
     });
