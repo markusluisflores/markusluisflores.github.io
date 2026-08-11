@@ -917,7 +917,9 @@ Leave `.timeline-entry::before` (the rail-dot pseudo-element, lines ~381-394) an
 
 - [ ] **Step 4: Add a zero-match treatment for project cards**
 
-Cards have no rail dot to hollow out, so they need their own "no bullets matched" visual. In `src/assets/css/style.css`, immediately after the `.timeline-entry.is-zero-match::before` rule, add:
+Cards have no rail dot to hollow out, so they need their own "no bullets matched" visual. **Do not** dim the whole `.project-card` via a single `opacity` rule — its bullets already get `opacity: 0.62` individually from the `.filter-entry ul li.is-dim` rule (Step 3), and CSS opacity compounds down the tree, so an additional card-level `opacity: 0.62` would render those bullets at an effective ~0.62 × 0.62 ≈ 0.38, visibly more washed-out than a zero-match Experience/Volunteer entry's bullets (which stay at a clean 0.62, since timeline entries have no equivalent parent-level opacity rule). Instead, dim only the card's own direct children that sit *outside* the bulleted list — title, meta line, tech line, and link — to the same 0.62, which reads as a uniformly-dimmed card without any element ever having two opacity effects multiplied together.
+
+In `src/assets/css/style.css`, immediately after the `.timeline-entry.is-zero-match::before` rule, add:
 
 ```css
 .timeline-entry.is-zero-match::before {
@@ -927,21 +929,21 @@ Cards have no rail dot to hollow out, so they need their own "no bullets matched
     inset 0 0 0 1.5px var(--border-strong);
 }
 
-.project-card.is-zero-match {
+.project-card.is-zero-match h3,
+.project-card.is-zero-match .project-meta,
+.project-card.is-zero-match .project-tech,
+.project-card.is-zero-match .project-link {
   opacity: 0.62;
 }
 
 .project-grid {
 ```
 
-(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value, for visual consistency between "this bullet didn't match" and "this whole card didn't match.")
+(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once.)
 
-Then find the `@media (prefers-reduced-motion: reduce)` block (around line 717) and the `@media print` block (around line 721) — both currently reference `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`. In **both** blocks:
-- Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim` (matches Step 3's rename)
-- Leave `.timeline-entry.is-zero-match::before` as-is (matches Step 3's note — still timeline-specific)
-- Add a new `.project-card.is-zero-match { opacity: 1 !important; }` rule alongside each, so reduced-motion and print both force full-opacity cards too
+Then find the `@media print` block (around line 697) — it already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
 
-For example, the reduced-motion block:
+In the `@media print` block, find:
 ```css
   .timeline-entry ul li.is-dim {
     opacity: 1 !important;
@@ -953,7 +955,7 @@ For example, the reduced-motion block:
     box-shadow: none !important;
   }
 ```
-becomes:
+Change to:
 ```css
   .filter-entry ul li.is-dim {
     opacity: 1 !important;
@@ -965,11 +967,14 @@ becomes:
     box-shadow: none !important;
   }
 
-  .project-card.is-zero-match {
+  .project-card.is-zero-match h3,
+  .project-card.is-zero-match .project-meta,
+  .project-card.is-zero-match .project-tech,
+  .project-card.is-zero-match .project-link {
     opacity: 1 !important;
   }
 ```
-Apply the same three-rule pattern (rename the `ul li.is-dim` selector, leave the timeline `::before` rule alone, add the `.project-card.is-zero-match` override) to the `@media print` block too.
+(Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim`, matching Step 3's rename; leave `.timeline-entry.is-zero-match::before` as-is, since it's still timeline-specific; add the new card-title/meta/tech/link override so printing forces those back to full opacity too.)
 
 - [ ] **Step 5: Generalize `skill-filter.js`**
 
@@ -1089,7 +1094,7 @@ Since no Projects/Volunteer skill chips are clickable yet (Task 5 hasn't run), f
 - Click the "Playwright" chip (evidenced via the existing RBC Experience bullet). Confirm:
   - The RBC Experience bullet mentioning Playwright ticks amber and stays full-opacity; other RBC/Infor bullets dim.
   - The Orbit IMS project card's Playwright bullet **also** ticks amber and stays full-opacity, and the card itself does not get `.is-zero-match` styling (it has a match).
-  - The Infor Carpool card and The Fourth Official card (neither has a Playwright-tagged bullet) both get `.is-zero-match` — visibly dimmed to ~62% opacity as a whole card.
+  - The Infor Carpool card and The Fourth Official card (neither has a Playwright-tagged bullet) both get `.is-zero-match` — their title, meta line, tech line, and link dim to ~62% opacity, matching the ~62% their (already individually-dimmed) bullets show, so the whole card reads as uniformly faded rather than the bullets looking darker than the title.
   - The filter bar reads "Filtering by Playwright" (not "Filtering Experience by Playwright") and its match count/source list includes both "Royal Bank of Canada (RBC)" and "Orbit Inventory Management System".
   - Press Escape: filter clears, all dimming and card-opacity effects are removed, filter bar hides.
 - Click the "GitHub Actions" chip (evidenced via both an RBC Experience bullet and the Orbit IMS bullet from Task 1). Confirm matches appear in both Experience and Projects, and the source list names both.
