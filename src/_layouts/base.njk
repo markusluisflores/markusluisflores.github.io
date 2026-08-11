@@ -16,9 +16,8 @@
   <meta property="og:url" content="{{ siteUrl }}/">
   <meta property="og:type" content="website">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/assets/fonts/fraunces-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/inter-variable-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/style.css">
   <noscript>
     <style>
@@ -50,11 +49,11 @@
     <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Toggle dark and light theme">🌓</button>
   </header>
 
-  <div class="filter-bar" data-filter-bar hidden>
+  <section class="filter-bar" data-filter-bar hidden aria-label="Active filters">
     <p class="filter-summary">Filtering Experience by <span class="filter-skills" data-filter-skills></span></p>
     <p class="filter-count" data-filter-count></p>
     <button type="button" class="filter-clear" data-filter-clear>Clear filter</button>
-  </div>
+  </section>
   <p class="sr-only" role="status" data-filter-status></p>
 
   <main>

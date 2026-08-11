@@ -35,6 +35,48 @@
   --accent-contrast: #151311;
 }
 
+/* No-JS visitors never get a data-theme attribute (the inline FOUC-prevention
+   script in base.njk sets it). Without this, they'd get the light palette
+   regardless of OS preference. Scoped to :not([data-theme]) so it never
+   overrides the JS-driven theme once JS has run. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #151311;
+    --surface: #1d1a17;
+    --text: #ece7e0;
+    --text-muted: #a8a097;
+    --border: #2c2825;
+    --border-strong: #8b8177;
+    --accent: #e8a94d;
+    --accent-strong: #e8a94d;
+    --accent-hover: #f0bd6f;
+    --accent-soft: #33281a;
+    --accent-contrast: #151311;
+  }
+}
+
+@font-face {
+  font-family: Fraunces;
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/assets/fonts/fraunces-variable-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/assets/fonts/inter-variable-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -51,6 +93,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
+  font-weight: 400;
 }
 
 .sr-only {
