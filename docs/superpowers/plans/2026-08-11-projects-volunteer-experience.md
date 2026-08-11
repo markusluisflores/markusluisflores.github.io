@@ -407,7 +407,6 @@ Insert the new rules between them:
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: opacity 0.18s ease;
 }
 
 .project-card h3 {
@@ -935,12 +934,13 @@ In `src/assets/css/style.css`, immediately after the `.timeline-entry.is-zero-ma
 .project-card.is-zero-match .project-tech,
 .project-card.is-zero-match .project-link {
   opacity: 0.62;
+  transition: opacity 0.18s ease;
 }
 
 .project-grid {
 ```
 
-(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once.)
+(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once. The `transition` matches `.filter-entry ul li.is-dim`'s own `transition: opacity 0.18s ease` — without it, the card's title/meta/tech/link would snap instantly to 0.62 while its bullets fade smoothly over 0.18s, a visible inconsistency within the same card.)
 
 Then find the `@media print` block (around line 697) — it already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
 
@@ -973,9 +973,10 @@ Change to:
   .project-card.is-zero-match .project-tech,
   .project-card.is-zero-match .project-link {
     opacity: 1 !important;
+    transition: none !important;
   }
 ```
-(Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim`, matching Step 3's rename; leave `.timeline-entry.is-zero-match::before` as-is, since it's still timeline-specific; add the new card-title/meta/tech/link override so printing forces those back to full opacity too.)
+(Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim`, matching Step 3's rename; leave `.timeline-entry.is-zero-match::before` as-is, since it's still timeline-specific; add the new card-title/meta/tech/link override, with the same `opacity: 1 !important; transition: none !important;` pattern as the renamed `.filter-entry ul li.is-dim` rule above it, so printing forces those back to full opacity too.)
 
 - [ ] **Step 5: Generalize `skill-filter.js`**
 
