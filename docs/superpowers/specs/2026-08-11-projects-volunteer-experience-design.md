@@ -61,13 +61,15 @@ Bullets:
 **1. Quality Assurance Tester** — Empowered Futures, June 2024
 1. "Performed end-to-end testing for the Empowered Futures Connect platform."
 2. "Documented scenarios, steps to replicate, and test evidence on issues and concerns found during software testing."
-3. "Provided feedback on the usability of the application for different roles and perspectives."
+3. "Provided feedback on the usability of the application for different roles and perspectives." — skills: `Communication`
 
 **2. Treasurer** — SAIT Beekeeping Club, June 2024 – April 2025
 1. "Participated in hive inspections, honey jarring, and other club activities as an active member."
 2. "Served as treasurer, auditing all financial transactions and managing the club's finances."
 
 Rationale for inclusion: not industry work, but genuine soft-skill evidence (financial oversight, active club leadership) rather than pure trivia — decided worth a second Volunteer Experience entry rather than a separate "fun facts" section, since it fits the same role/org/dates shape and doesn't justify a new content category for one item.
+
+The QA Tester entry's third bullet is tagged `Communication` (already present in the Skills → Soft Skills list) — without at least one Volunteer bullet carrying a real tag, a "Volunteer only" filter match is structurally impossible, which would leave the "Filter extension" section's own regression-testing requirement below (filtering with matches in Experience only, Projects only, Volunteer only, and mixed) unsatisfiable. Found and fixed during PR #16's review (round 3) — an earlier version of this spec added skills data to Projects but left every Volunteer bullet untagged.
 
 ## Data model (`src/_data/resume.json`)
 
@@ -125,7 +127,7 @@ Two new top-level arrays, following the existing `experience` array's `{bullets:
     "bullets": [
       { "text": "Performed end-to-end testing for the Empowered Futures Connect platform." },
       { "text": "Documented scenarios, steps to replicate, and test evidence on issues and concerns found during software testing." },
-      { "text": "Provided feedback on the usability of the application for different roles and perspectives." }
+      { "text": "Provided feedback on the usability of the application for different roles and perspectives.", "skills": ["Communication"] }
     ]
   },
   {

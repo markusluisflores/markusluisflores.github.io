@@ -184,7 +184,8 @@ Change it to:
           "text": "Documented scenarios, steps to replicate, and test evidence on issues and concerns found during software testing."
         },
         {
-          "text": "Provided feedback on the usability of the application for different roles and perspectives."
+          "text": "Provided feedback on the usability of the application for different roles and perspectives.",
+          "skills": ["Communication"]
         }
       ]
     },
@@ -1253,15 +1254,16 @@ Run:
 npm run build
 grep -o 'data-skill="[^"]*"' _site/index.html | sort -u
 ```
-Expected: build exits 0, and the deduplicated list contains exactly 30 skills: the 14 pre-existing (Agile Scrum Methodology, ConformIQ, Hexawise, Copilot, Playwright, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev) plus 16 newly evidenced by this feature's bullets: pgvector, Supabase, SQL, RAG, Claude API, Next.js, Vitest, Claude Code, React.js, TypeScript, Mantine, HTML, CSS, JavaScript, Laravel, PHP. (`Playwright` and `GitHub Actions` also appear on the new Orbit IMS bullets, but were already evidenced via Experience, so they don't add to the count.) `Railway` is **not** in this list and stays an inert chip — none of this feature's bullets tag it; it only appears in The Fourth Official's "Built with" tech line. That leaves 19 of the master list's 49 skills still inert.
+Expected: build exits 0, and the deduplicated list contains exactly 31 skills: the 14 pre-existing (Agile Scrum Methodology, ConformIQ, Hexawise, Copilot, Playwright, Jira, qTest, Red Hat OpenShift, GitHub Actions, UrbanCode Deploy, Landmark Pattern Language (LPL), Business Logic Testing (BLT), Git, AccuRev) plus 17 newly evidenced by this feature's bullets: pgvector, Supabase, SQL, RAG, Claude API, Next.js, Vitest, Claude Code, React.js, TypeScript, Mantine, HTML, CSS, JavaScript, Laravel, PHP, Communication. (`Playwright` and `GitHub Actions` also appear on the new Orbit IMS bullets, but were already evidenced via Experience, so they don't add to the count; `Communication` was already in the master Soft Skills list but had no evidencing bullet anywhere until the Volunteer Experience QA Tester entry's third bullet — see Task 1 Step 2 — gained the tag.) `Railway` is **not** in this list and stays an inert chip — none of this feature's bullets tag it; it only appears in The Fourth Official's "Built with" tech line. That leaves 18 of the master list's 49 skills still inert.
 
 - [ ] **Step 4: Full manual verification — the interaction as a hiring manager would actually use it**
 
 Run `npm run serve`, open `http://localhost:8080/`.
 
-- Confirm `Laravel`, `pgvector`, `Supabase`, `RAG`, `Claude API`, `Vitest`, and `Claude Code` chips now render as buttons (cursor: pointer on hover, visible hover state) rather than plain inert text.
+- Confirm `Laravel`, `pgvector`, `Supabase`, `RAG`, `Claude API`, `Vitest`, `Claude Code`, and `Communication` chips now render as buttons (cursor: pointer on hover, visible hover state) rather than plain inert text.
 - Click `Claude Code`. Confirm: The Fourth Official's 4th bullet ("Built solo using Claude Code...") ticks amber; the card is not dimmed (it has a match); Orbit IMS and Infor Carpool cards both get `.is-zero-match` dimming (neither bullet is tagged `Claude Code`); Experience and Volunteer entries also dim (no match there either); filter bar reads "Filtering by Claude Code" with the source list naming only "The Fourth Official".
 - Click `Laravel`. Confirm it matches only the Infor Carpool card's first bullet, and correctly dims everything else including the RBC/Infor **Experience** entries (which have no Laravel bullet) — this is the cross-section case that would have been silently broken before Task 4.
+- Click `Communication`. This is the plan's one Volunteer-only match case (the spec's "Filter extension" regression-risk section explicitly requires testing a Volunteer-only match, and this is the only skill tagged on any Volunteer bullet). Confirm: the QA Tester entry's third bullet ("Provided feedback on the usability...") ticks amber and stays full-opacity; the QA Tester entry's other two (untagged) bullets dim; the Treasurer entry (no tagged bullets at all) gets its own bullets dimmed and, since it's a `.timeline-entry` not a `.project-card`, shows the hollow rail-dot `.is-zero-match::before` treatment rather than the card-specific opacity rule; every Experience entry and every Project card also dim/zero-match (no `Communication` tag anywhere else); filter bar reads "Filtering by Communication" with the source list naming only "Empowered Futures".
 - Click `pgvector`, then also click `RAG` (multi-select, OR logic per the existing chip behavior). Confirm the match count includes multiple bullets within The Fourth Official's card, and the "N matches in The Fourth Official" wording reads correctly (source list de-duplicates repeated card names).
 - Tab through the chips with keyboard only, activate one with Enter/Space, then Tab to and activate the "Clear filter" button. Confirm focus lands back on the chip you last toggled (existing focus-restore behavior — verify it still works for a chip whose only match is in Projects, not just Experience).
 - Confirm an un-evidenced chip (e.g. `Java`, `Docker`, `Cursor`, `n8n`) still shows no pointer cursor and does nothing when clicked.
