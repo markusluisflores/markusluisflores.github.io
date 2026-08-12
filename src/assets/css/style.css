@@ -408,7 +408,7 @@ main > section > h2 {
   letter-spacing: -0.01em;
 }
 
-.timeline-entry ul {
+.filter-entry ul {
   display: grid;
   gap: 0.65rem;
   max-width: 58ch;
@@ -417,14 +417,14 @@ main > section > h2 {
   list-style: none;
 }
 
-.timeline-entry ul li {
+.filter-entry ul li {
   position: relative;
   padding-left: 1.5rem;
   line-height: 1.6;
   transition: opacity 0.18s ease;
 }
 
-.timeline-entry ul li::before {
+.filter-entry ul li::before {
   content: "";
   position: absolute;
   top: 0.75em;
@@ -438,13 +438,13 @@ main > section > h2 {
     height 0.18s ease;
 }
 
-.timeline-entry ul li.is-match::before {
+.filter-entry ul li.is-match::before {
   width: 0.95rem;
   height: 2px;
   background: var(--accent);
 }
 
-.timeline-entry ul li.is-dim {
+.filter-entry ul li.is-dim {
   opacity: 0.62;
 }
 
@@ -494,11 +494,7 @@ main > section > h2 {
 }
 
 .project-card ul {
-  display: grid;
-  gap: 0.65rem;
   margin: 0 0 1rem;
-  padding: 0;
-  list-style: none;
 }
 
 .project-link {
@@ -659,6 +655,10 @@ button.chip:focus-visible {
   outline-color: var(--text);
 }
 
+.project-card.is-zero-match h3 {
+  opacity: 0.62;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   #experience,
   #skills,
@@ -788,7 +788,7 @@ button.chip:focus-visible {
     transition: none !important;
   }
 
-  .timeline-entry ul li.is-dim {
+  .filter-entry ul li.is-dim {
     opacity: 1 !important;
     transition: none !important;
   }
@@ -796,6 +796,11 @@ button.chip:focus-visible {
   .timeline-entry.is-zero-match::before {
     background: var(--accent) !important;
     box-shadow: none !important;
+  }
+
+  .project-card.is-zero-match h3 {
+    opacity: 1 !important;
+    transition: none !important;
   }
 
   .site-header,

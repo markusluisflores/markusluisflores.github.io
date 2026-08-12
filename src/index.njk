@@ -17,7 +17,7 @@ layout: base.njk
   <h2>Experience</h2>
   <ol class="timeline" role="list">
     {% for job in resume.experience %}
-    <li class="timeline-entry" data-company="{{ job.company }}">
+    <li class="timeline-entry filter-entry" data-source="{{ job.company }}">
       <h3>{{ job.role }}</h3>
       <p class="timeline-meta">{{ job.company }} · {{ job.dates }}</p>
       <ul role="list">
@@ -52,7 +52,7 @@ layout: base.njk
   <h2>Projects</h2>
   <div class="project-grid">
     {% for project in resume.projects %}
-    <article class="project-card" data-source="{{ project.title }}">
+    <article class="project-card filter-entry" data-source="{{ project.title }}">
       <h3>{{ project.title }}</h3>
       <p class="project-meta">{{ project.subtitle }} · {{ project.dates }}</p>
       {% if project.builtWith %}<p class="project-tech">Built with {{ project.builtWith }}</p>{% endif %}
@@ -84,7 +84,7 @@ layout: base.njk
   <h2>Volunteer Experience</h2>
   <ol class="timeline" role="list">
     {% for entry in resume.volunteer %}
-    <li class="timeline-entry" data-source="{{ entry.org }}">
+    <li class="timeline-entry filter-entry" data-source="{{ entry.org }}">
       <h3>{{ entry.role }}</h3>
       <p class="timeline-meta">{{ entry.org }} · {{ entry.dates }}</p>
       <ul role="list">
