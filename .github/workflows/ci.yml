@@ -40,7 +40,7 @@ jobs:
       - run: npx stylelint "src/assets/css/**/*.css"
       - run: npm run build
       - run: npx html-validate "_site/**/*.html"
-      - run: npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
+      - run: npx linkinator _site --recurse --retry --retry-errors --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
       - run: npm audit --audit-level=high
 
   lighthouse:
