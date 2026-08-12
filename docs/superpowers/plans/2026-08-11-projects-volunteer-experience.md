@@ -491,7 +491,7 @@ npm run serve
 ```
 Open `http://localhost:8080/` and scroll to the Projects section (it's between Skills and Education, before the nav is updated in Task 3 — reach it by scrolling, not by nav click yet). Confirm:
 - Three cards render in a responsive grid (resize the window narrower than ~500px and confirm they stack to one column).
-- Each card shows title, subtitle · dates, the "Built with" line, bullets, and (for The Fourth Official and Orbit IMS only) link(s) at the bottom.
+- Each card shows title, subtitle · dates, the "Built with" line, bullets, and (for The Fourth Official and Orbit IMS only) link(s) directly following the bullets.
 - The Infor Carpool card has no link row and doesn't leave obvious empty space where one would be.
 - Clicking "GitHub repo →" or "Live demo (password on request) →" opens the correct URL in a new tab.
 
@@ -1365,6 +1365,16 @@ This is the project's real CI command (`.github/workflows/ci.yml`), not an inven
 npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
 ```
 Expected: no broken links reported, including the two new external links (`github.com/markusluisflores/the-fourth-official`, `the-fourth-official-production.up.railway.app`) and the existing Orbit IMS repo link.
+
+- [ ] **Step 2b: Run the accessibility CI gate locally**
+
+`.github/workflows/ci.yml`'s `lighthouse` job is the one gate most plausibly affected by this feature — two new sections, three new cards, five new links, and a new dimmed (`.is-zero-match`) state all landed since the last time this project's accessibility score was checked. Run the exact CI command against the build already produced by Step 1:
+
+```bash
+npx @lhci/cli autorun
+```
+
+Expected: exits 0, with `categories:accessibility` scoring at least the `lighthouserc.json`-configured `0.9` threshold (`assert.assertions."categories:accessibility"`). If this fails, don't just re-run it — read which element(s) Lighthouse flagged; the most likely candidate given this feature's changes is the `.project-card.is-zero-match h3` dimmed state from Task 4 Step 4 (already verified in that step's own reasoning to hold ~4.87:1 light / ~6.13:1 dark, comfortably above the 4.5:1 WCAG AA floor for normal text — but Lighthouse's default run only audits the page's *resting*, unfiltered state, so it won't itself catch a contrast problem that only appears while filtering is active; if you want to check the filtered state too, trigger a filter with DevTools open and run Lighthouse's accessibility audit again while it's active).
 
 - [ ] **Step 3: Full keyboard-only pass**
 
