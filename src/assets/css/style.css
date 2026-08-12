@@ -409,13 +409,22 @@ main > section > h2 {
   letter-spacing: -0.01em;
 }
 
+/*
+ * Plain block flow, not display: grid — grid (like the flex formatting
+ * context .project-card used to have) doesn't reliably honor
+ * break-inside: avoid for its own items during print fragmentation in
+ * this codebase's testing. break-inside: avoid on this now-block-level
+ * <ul> is what actually stops the bullet list itself from splitting
+ * between two <li> items across a page boundary (the reported bug);
+ * the previous grid gap is replaced with margin-based spacing on the
+ * <li> below.
+ */
 .filter-entry ul {
-  display: grid;
-  gap: 0.65rem;
   max-width: 58ch;
   margin: 0;
   padding: 0;
   list-style: none;
+  break-inside: avoid;
 }
 
 .filter-entry ul li {
@@ -423,6 +432,19 @@ main > section > h2 {
   padding-left: 1.5rem;
   line-height: 1.6;
   transition: opacity 0.18s ease;
+
+  /* Replaces the removed `gap: 0.65rem` from .filter-entry ul's former
+     display: grid. */
+  margin-bottom: 0.65rem;
+
+  /* Secondary protection: stops a single bullet's own wrapped text from
+     splitting mid-line, in addition to .filter-entry ul's break-inside
+     above (which stops the list from splitting between bullets). */
+  break-inside: avoid;
+}
+
+.filter-entry ul li:last-child {
+  margin-bottom: 0;
 }
 
 .filter-entry ul li::before {

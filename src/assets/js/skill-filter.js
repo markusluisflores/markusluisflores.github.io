@@ -197,6 +197,18 @@
     });
 
     chip.addEventListener("click", function () {
+      // The filter bar (and its Clear button) sits before <main> in DOM
+      // order, sticky-positioned below the header - it's always on screen
+      // once a filter is active, but a keyboard user activating a chip
+      // deep inside <main> (e.g. the Skills section) has no way to reach
+      // it by forward-Tabbing there; Escape works, but the visible button
+      // itself is otherwise unreachable except via ~40+ Shift+Tab presses.
+      // Move focus to it on the 0-to-1 activation transition specifically
+      // (not on every toggle, so continuing to add/remove filters doesn't
+      // keep yanking focus away from the chip grid) - the same
+      // isFocusVisible() guard clearAll() already uses, so a mouse click
+      // doesn't trigger a keyboard-only behavior.
+      var wasFirstActivation = active.length === 0 && isFocusVisible(chip);
       lastChip = chip;
       if (isActive(skill)) {
         active = active.filter(function (name) {
@@ -210,6 +222,12 @@
       commit();
       if (active.length) {
         revealFirstMatch();
+      }
+      if (wasFirstActivation && active.length && clearButton) {
+        // preventScroll: revealFirstMatch() above already manages where
+        // the page scrolls to; focus() would otherwise fight that by
+        // auto-scrolling the sticky filter bar into its own view.
+        clearButton.focus({ preventScroll: true });
       }
     });
   });
