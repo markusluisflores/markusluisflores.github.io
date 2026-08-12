@@ -226,7 +226,7 @@ Required changes:
    - `matchedCompanies()` renamed to `matchedSources()`, reads `data-source` instead of `data-company`
    - `revealFirstMatch()`'s query becomes `.filter-entry li.is-match` (was `.timeline-entry li.is-match`)
 4. **Copy.** The filter bar's summary text and the screen-reader status announcement both currently hardcode the word "Experience" ("Filtering Experience by X"). Both become "Filtering by X" — the `matchedSources()` list (e.g. "3 matches in RBC and The Fourth Official") already conveys where the matches are without needing the word "Experience" baked into the sentence.
-5. **CSS (`src/assets/css/style.css`).** The `is-match` / `is-dim` / `is-zero-match` rules (currently `.timeline-entry ul li.is-match`, `.timeline-entry ul li.is-dim`, `.timeline-entry.is-zero-match::before`, including the `prefers-reduced-motion` override block) are generalized to target `.filter-entry` instead of `.timeline-entry`, so they apply equally to `.project-card`.
+5. **CSS (`src/assets/css/style.css`).** The `is-match` / `is-dim` / `is-zero-match` rules (currently `.timeline-entry ul li.is-match`, `.timeline-entry ul li.is-dim`, `.timeline-entry.is-zero-match::before`, including their `@media print` force-reset overrides) are generalized to target `.filter-entry` instead of `.timeline-entry`, so they apply equally to `.project-card`. There is no separate `prefers-reduced-motion` override for these rules to generalize — this codebase's only `prefers-reduced-motion` blocks govern the scroll-reveal fade-in, not the filter's dim/match state, and don't reference `is-dim`/`is-zero-match` at all.
 6. **`.eleventy.js`.** The `isEvidenced` filter currently only scans `resume.experience`. It's updated to scan `resume.experience`, `resume.projects`, and `resume.volunteer` combined, so Skills chips accurately reflect evidence from all three sections. `src/index.njk`'s call site changes from `item | isEvidenced(resume.experience)` to pass a combined array (e.g. built once via `resume.experience.concat(resume.projects, resume.volunteer)` and reused across the chip-rendering loop for the WeakMap cache to hit consistently).
 7. **`src/assets/js/scroll-reveal.js`.** Its hardcoded section list (`#experience, #skills, #education`) gains `#projects, #volunteer`, or those two sections never receive the `is-visible` class and stay at `opacity: 0`.
 
@@ -236,7 +236,7 @@ Required changes:
 
 ## Testing
 
-- All logic files (`skill-filter.js`, `.eleventy.js`'s `isEvidenced` filter) need passing unit/build tests before PR, per the project's standard workflow.
+- This project has no unit-test framework and no `test` script (`package.json` confirmed) — a deliberate choice from the original site design, since it's presentational markup driven by data, not application logic. "Tests" for `skill-filter.js` and `.eleventy.js`'s `isEvidenced` filter mean `npm run build` and `npm run lint` both exiting 0, plus the manual/browser regression pass this section already requires — not an automated test suite.
 - Manual/Playwright browser verification of the filter's extended behavior (see "Regression risk" above) is required given the component's history — this is exactly the kind of real-browser testing this project's process notes call out as the correct use of that effort, not a case to skip.
 - Visual QA of the new `.project-card` grid at the breakpoints already established for the rest of the site (the existing responsive rules for `.timeline` and `.skill-chips` should inform the grid's own breakpoints, not be redesigned from scratch).
 

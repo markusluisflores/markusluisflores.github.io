@@ -13,7 +13,7 @@
 - No TypeScript, no unit test framework — this project is presentational markup driven by data (established in the 2026-08-03 site design). "Tests" here mean: `npm run build` exits 0, `npm run lint` (ESLint + Stylelint) exits 0, `html-validate` passes, and the manual/browser verification steps in each task actually get run, not skipped.
 - Every skill tag used in a `resume.json` bullet must exactly string-match an entry in the `skills` array — `isEvidenced` does exact-string matching, not fuzzy matching.
 - Follow existing code style: 2-space indent, double quotes in JS, trailing commas per Prettier defaults (already enforced by `lint-staged`).
-- Commit after every task using this repo's commit message convention (see recent `git log` — `type: description`, e.g. `feat: add Projects and Volunteer Experience sections`).
+- Commit after every task using this repo's commit message convention (see recent `git log` — `type: description`, e.g. `feat: add Projects and Volunteer Experience sections`). The commit-msg hook enforces `commitlint.config.mjs`'s `header-max-length` at **72 characters** (including the `type: ` prefix) — count before committing, since this hook rejects the commit outright rather than warning.
 
 ---
 
@@ -24,7 +24,7 @@
 | `src/_data/resume.json` | Add `projects` and `volunteer` arrays; add 7 new entries across existing `skills` categories |
 | `src/index.njk` | Add `<section id="projects">` and `<section id="volunteer">`; add `filter-entry`/`data-source` to all three bulleted sections' entries; update the Skills chip-rendering call site for the combined `isEvidenced` source |
 | `src/_layouts/base.njk` | Reorder nav links; generalize `<noscript>` fallback's hardcoded section-ID list; generalize the filter-bar's "Filtering Experience by" copy |
-| `src/assets/css/style.css` | New `.project-grid`/`.project-card` rules; generalize `.timeline-entry ul`/`ul li` bullet rules to `.filter-entry`; add a `.project-card.is-zero-match` rule (cards have no rail-dot to hollow out); extend the reduced-motion and `@media print` section-ID lists |
+| `src/assets/css/style.css` | New `.project-grid`/`.project-card` rules; update `main`'s `grid-template-rows` from 3 to 5 tracks; add `flex-wrap` to `.site-nav`'s mobile rule; generalize `.timeline-entry ul`/`ul li` bullet rules to `.filter-entry`; add a `.project-card.is-zero-match h3` rule (cards have no rail-dot to hollow out); extend the reduced-motion and `@media print` section-ID lists |
 | `src/assets/js/scroll-reveal.js` | Extend hardcoded section-ID list |
 | `src/assets/js/skill-filter.js` | Generalize selectors from `.timeline-entry` to `.filter-entry`; rename `data-company`/`matchedCompanies()` to `data-source`/`matchedSources()`; generalize the "Filtering Experience by" status copy |
 | `.eleventy.js` | `isEvidenced`'s backing set now scans `experience` + `projects` + `volunteer` combined, not just `experience` |
@@ -83,8 +83,14 @@ Change it to:
       "dates": "Jul 2026 – Present",
       "builtWith": "Next.js, Supabase Postgres + pgvector, Voyage embeddings, Claude Haiku 4.5, Vitest, Railway",
       "links": [
-        { "label": "GitHub repo", "url": "https://github.com/markusluisflores/the-fourth-official" },
-        { "label": "Live demo (password on request)", "url": "https://the-fourth-official-production.up.railway.app/" }
+        {
+          "label": "GitHub repo",
+          "url": "https://github.com/markusluisflores/the-fourth-official"
+        },
+        {
+          "label": "Live demo (password on request)",
+          "url": "https://the-fourth-official-production.up.railway.app/"
+        }
       ],
       "bullets": [
         {
@@ -297,7 +303,10 @@ Find the `"AI Tools"` category:
 ```
 Change to (adds `RAG` and `Claude API`):
 ```json
-    { "category": "AI Tools", "items": ["Claude Code", "Claude API", "RAG", "Copilot", "Cursor", "n8n"] },
+    {
+      "category": "AI Tools",
+      "items": ["Claude Code", "Claude API", "RAG", "Copilot", "Cursor", "n8n"]
+    },
 ```
 
 - [ ] **Step 4: Verify the JSON is valid and Eleventy picks it up**
@@ -397,6 +406,7 @@ Insert the new rules between them:
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  align-items: start;
   gap: 1.25rem;
 }
 
@@ -422,7 +432,6 @@ Insert the new rules between them:
   margin: 0 0 0.75rem;
   color: var(--text-muted);
   font-size: 0.8125rem;
-  transition: opacity 0.18s ease;
 }
 
 .project-tech {
@@ -430,7 +439,6 @@ Insert the new rules between them:
   color: var(--text-muted);
   font-size: 0.8125rem;
   font-style: italic;
-  transition: opacity 0.18s ease;
 }
 
 .project-card ul {
@@ -442,13 +450,11 @@ Insert the new rules between them:
 }
 
 .project-link {
-  margin-top: auto;
-  padding-top: 0.5rem;
+  margin-top: 0.5rem;
   color: var(--accent-strong);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
-  transition: opacity 0.18s ease;
 }
 
 .project-link:hover {
@@ -458,13 +464,12 @@ Insert the new rules between them:
 
 .project-link + .project-link {
   margin-top: 0.35rem;
-  padding-top: 0;
 }
 
 .skill-group {
 ```
 
-`margin-top: auto` on `.project-link` pins each card's *first* link to the bottom of the card even when sibling cards have different bullet-list heights (flexbox column + `auto` margin) — that first link's row lines up across cards regardless of content length above it. It's an approximate alignment, not an exact one: The Fourth Official has two stacked links (`.project-link + .project-link` adds a small top margin between them) while Orbit IMS has one, so their *last* link's row doesn't land at the same height — only the first one does. The Infor Carpool card (zero links) simply renders no `.project-link` at all — the `{% for link in project.links %}` loop over an empty array produces nothing, no conditional needed.
+`align-items: start` on `.project-grid` matters more than it looks: CSS Grid items stretch to the tallest row's height by default, and this grid's cards have very different content lengths (The Fourth Official's 4 bullets vs. Infor Carpool's 2). Without `align-items: start`, every card in a row stretches to match its tallest sibling — combined with the original `margin-top: auto` on `.project-link` (since removed), that stretch would leave the shorter cards' links pushed hundreds of pixels down into a large empty gap at the bottom of the card, rather than sitting close to the bullets above them. `align-items: start` makes each card size to its own content instead, so `.project-link` can just use a normal `margin-top` and follow directly after the bullets. The Infor Carpool card (zero links) simply renders no `.project-link` at all — the `{% for link in project.links %}` loop over an empty array produces nothing, no conditional needed.
 
 Project-card bullets deliberately have **no bullet marker or `is-match`/`is-dim` styling yet** — that's the shared `.filter-entry ul li` treatment Task 4 introduces. Right now they're plain `<li>` text in a `<ul role="list">`.
 
@@ -670,7 +675,9 @@ In `src/assets/js/scroll-reveal.js`, find:
 Change to:
 
 ```js
-  var sections = document.querySelectorAll("#experience, #skills, #projects, #education, #volunteer");
+  var sections = document.querySelectorAll(
+    "#experience, #skills, #projects, #education, #volunteer"
+  );
 ```
 
 - [ ] **Step 5: Extend the two CSS section-ID lists**
@@ -773,6 +780,7 @@ Run `npm run serve`, open `http://localhost:8080/`.
 - In DevTools, enable "Emulate CSS media feature prefers-reduced-motion: reduce" and reload — confirm all 5 sections are immediately visible with no fade-in animation.
 - Print-preview the page (Ctrl+P) and confirm Projects and Volunteer both appear fully visible in the preview, not blank/faded.
 - Using DevTools device emulation, check the page at 320px, 375px, 390px, and 412px wide. At each width, confirm: no horizontal scrollbar on the page; all 5 nav links are visible (wrapped onto a second line is fine, cut off or scrolled-away is not); "Volunteer" specifically is not pushed off-screen. This is the check for Step 2b's fix — verify it actually holds at all four widths, not just one.
+- **Known, accepted tradeoff — verify it stays within bounds, don't try to eliminate it.** Wrapping 5 nav links onto 2 lines makes the sticky header taller at narrow widths (measured going from ~56-78px to ~107px at 320-412px, since `.site-header` itself also wraps, pushing the theme-toggle button below the now-2-line nav). This is a real, visible side effect of fitting 5 links where 3 used to fit — accepted as reasonable rather than fixed with further layout changes, since a deeper mobile-header redesign (e.g. hiding the header's theme-toggle on narrow widths, since the footer already has one) is out of scope for this feature and risks introducing yet another subtle bug in an area this plan has already touched multiple times. Confirm only that it stays bounded: the header still doesn't overlap page content below it, and with an active filter (`.filter-bar` visible, `max-height: 40vh`) there's still visible content below the combined chrome at 320×568 (iPhone SE), the shortest common mobile viewport — if the combined header+filter-bar chrome ever pushes real content fully off-screen, that's a real bug worth fixing; a taller-but-still-bounded header is not.
 
 Stop the dev server when done.
 
@@ -780,7 +788,7 @@ Stop the dev server when done.
 
 ```bash
 git add src/index.njk src/_layouts/base.njk src/assets/js/scroll-reveal.js src/assets/css/style.css
-git commit -m "feat: add Volunteer Experience section, reorder nav, extend scroll-reveal"
+git commit -m "feat: add Volunteer section, reorder nav, extend scroll-reveal"
 ```
 
 ---
@@ -967,7 +975,9 @@ Leave `.timeline-entry::before` (the rail-dot pseudo-element, lines ~381-394) an
 
 - [ ] **Step 4: Add a zero-match treatment for project cards**
 
-Cards have no rail dot to hollow out, so they need their own "no bullets matched" visual. **Do not** dim the whole `.project-card` via a single `opacity` rule — its bullets already get `opacity: 0.62` individually from the `.filter-entry ul li.is-dim` rule (Step 3), and CSS opacity compounds down the tree, so an additional card-level `opacity: 0.62` would render those bullets at an effective ~0.62 × 0.62 ≈ 0.38, visibly more washed-out than a zero-match Experience/Volunteer entry's bullets (which stay at a clean 0.62, since timeline entries have no equivalent parent-level opacity rule). Instead, dim only the card's own direct children that sit *outside* the bulleted list — title, meta line, tech line, and link — to the same 0.62, which reads as a uniformly-dimmed card without any element ever having two opacity effects multiplied together.
+Cards have no rail dot to hollow out, so they need their own "no bullets matched" visual. **Do not** dim the whole `.project-card` via a single `opacity` rule — its bullets already get `opacity: 0.62` individually from the `.filter-entry ul li.is-dim` rule (Step 3), and CSS opacity compounds down the tree, so an additional card-level `opacity: 0.62` would render those bullets at an effective ~0.62 × 0.62 ≈ 0.38, visibly more washed-out than a zero-match Experience/Volunteer entry's bullets (which stay at a clean 0.62, since timeline entries have no equivalent parent-level opacity rule).
+
+**Also do not dim `.project-meta`, `.project-tech`, or `.project-link` — only `h3`.** All three already use `color: var(--text-muted)` (Task 2 Step 2), which measures roughly 5.7:1 against the card background on its own — comfortably above WCAG AA's 4.5:1 floor for normal text, but with almost no headroom left. Multiplying that by a further `opacity: 0.62` drops all three to ~2.6:1 in light mode (and `.project-link` to ~4.0:1 even in dark mode) — a real accessibility regression that passes every automated gate in this repo (`stylelint` has no contrast rule, and Lighthouse's default a11y run only audits the page's unfiltered resting state, never the filtered/dimmed state a visitor produces by actually using the feature). `h3` uses the much higher-contrast `var(--text)` and stays comfortably above 4.5:1 even at 0.62 opacity (measured ~4.9:1 light, ~6.1:1 dark), so it's the only one of the four safe to dim. Dimming just the title, combined with the bullets already dimming individually, still reads clearly as "this card didn't match" — the meta/tech/link lines staying at full brightness is a feature, not a gap: a visitor should still be able to read the tech stack and follow the repo link on a card that happens not to match their current filter.
 
 **Placement matters here, not just content.** In `src/assets/css/style.css`, find:
 
@@ -986,19 +996,16 @@ button.chip:focus-visible {
   outline-color: var(--text);
 }
 
-.project-card.is-zero-match h3,
-.project-card.is-zero-match .project-meta,
-.project-card.is-zero-match .project-tech,
-.project-card.is-zero-match .project-link {
+.project-card.is-zero-match h3 {
   opacity: 0.62;
 }
 
 @media (prefers-reduced-motion: no-preference) {
 ```
 
-Do **not** insert this rule immediately after `.timeline-entry.is-zero-match::before` (i.e., up near line 451, alongside the rest of the `.project-card` block from Task 2) even though that placement would read more naturally next to the other zero-match rule — it breaks `npm run lint`. `stylelint-config-standard`'s `no-descending-specificity` rule (active in this repo's `.stylelintrc.json`) flags a two-class-plus-tag selector like `.project-card.is-zero-match h3` appearing *before* lower-specificity selectors targeting overlapping elements later in the same file — and at that position it sits above not only `.project-card h3`/`.project-meta`/`.project-tech`/`.project-link` (added later in this same task) but also the unrelated `.skill-group h3` and `.education-entry h3` further down. Confirmed by actually running `stylelint` against both placements: the near-line-451 placement produces 8 errors; placing it here — after all base component styles, immediately before the file's first responsive/reduced-motion `@media` block — produces zero.
+Do **not** insert this rule immediately after `.timeline-entry.is-zero-match::before` (i.e., up near line 451, alongside the rest of the `.project-card` block from Task 2) even though that placement would read more naturally next to the other zero-match rule — it breaks `npm run lint`. `stylelint-config-standard`'s `no-descending-specificity` rule (active in this repo's `.stylelintrc.json`) flags a two-class-plus-tag selector like `.project-card.is-zero-match h3` appearing *before* lower-specificity selectors targeting overlapping elements later in the same file — and at that position it sits above `.project-card h3` (added later in this same task) as well as the unrelated `.skill-group h3` and `.education-entry h3` further down. Confirmed by actually running `stylelint` against both placements: the near-line-451 placement produces errors; placing it here — after all base component styles, immediately before the file's first responsive/reduced-motion `@media` block — produces zero.
 
-(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once. This rule deliberately carries **no** `transition` of its own — the transition lives on the base `.project-card h3`/`.project-meta`/`.project-tech`/`.project-link` rules from Task 2 Step 2 instead, exactly mirroring how `.filter-entry ul li`'s base rule carries the transition while `.filter-entry ul li.is-dim` itself carries only `opacity`. Putting the transition on the `.is-zero-match` variant instead — the first version of this step did — makes it one-directional: it'd animate the fade *in* when the class is added, but the class removal on filter-clear snaps straight back to full opacity with no transition at all, since the removed rule's `transition` disappears along with it. Declaring the transition on the always-present base rule makes both directions animate.)
+(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value, for visual consistency between "this bullet didn't match" and "this card's title is de-emphasized." This rule deliberately carries **no** `transition` of its own — the transition lives on the base `.project-card h3` rule from Task 2 Step 2 instead, exactly mirroring how `.filter-entry ul li`'s base rule carries the transition while `.filter-entry ul li.is-dim` itself carries only `opacity`. Putting the transition on the `.is-zero-match` variant instead — an earlier version of this step did — makes it one-directional: it'd animate the fade *in* when the class is added, but the class removal on filter-clear snaps straight back to full opacity with no transition at all, since the removed rule's `transition` disappears along with it. Declaring the transition on the always-present base rule makes both directions animate.)
 
 Then find the `@media print` block — its exact line number shifts as earlier tasks in this plan add lines above it, so search for the block by its `@media print {` opening rather than a line number. It already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
 
@@ -1026,15 +1033,12 @@ Change to:
     box-shadow: none !important;
   }
 
-  .project-card.is-zero-match h3,
-  .project-card.is-zero-match .project-meta,
-  .project-card.is-zero-match .project-tech,
-  .project-card.is-zero-match .project-link {
+  .project-card.is-zero-match h3 {
     opacity: 1 !important;
     transition: none !important;
   }
 ```
-(Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim`, matching Step 3's rename; leave `.timeline-entry.is-zero-match::before` as-is, since it's still timeline-specific; add the new card-title/meta/tech/link override, with the same `opacity: 1 !important; transition: none !important;` pattern as the renamed `.filter-entry ul li.is-dim` rule above it, so printing forces those back to full opacity too.)
+(Rename `.timeline-entry ul li.is-dim` to `.filter-entry ul li.is-dim`, matching Step 3's rename; leave `.timeline-entry.is-zero-match::before` as-is, since it's still timeline-specific; add the new card-title override, with the same `opacity: 1 !important; transition: none !important;` pattern as the renamed `.filter-entry ul li.is-dim` rule above it, so printing forces it back to full opacity too. `.project-meta`/`.project-tech`/`.project-link` never dim in the first place — see Step 4's accessibility note — so there's nothing to reset for them here.)
 
 - [ ] **Step 5: Generalize `skill-filter.js`**
 
@@ -1154,11 +1158,11 @@ Since no Projects/Volunteer skill chips are clickable yet (Task 5 hasn't run), f
 - Click the "Playwright" chip (evidenced via the existing RBC Experience bullet). Confirm:
   - The RBC Experience bullet mentioning Playwright ticks amber and stays full-opacity; other RBC/Infor bullets dim.
   - The Orbit IMS project card's Playwright bullet **also** ticks amber and stays full-opacity, and the card itself does not get `.is-zero-match` styling (it has a match).
-  - The Infor Carpool card and The Fourth Official card (neither has a Playwright-tagged bullet) both get `.is-zero-match` — their title, meta line, tech line, and link dim to ~62% opacity, matching the ~62% their (already individually-dimmed) bullets show, so the whole card reads as uniformly faded rather than the bullets looking darker than the title.
+  - The Infor Carpool card and The Fourth Official card (neither has a Playwright-tagged bullet) both get `.is-zero-match` — their title dims to ~62% opacity, matching the ~62% their (already individually-dimmed) bullets show; the meta line, tech line, and link stay at full brightness (deliberately — see Task 4 Step 4's accessibility note on why those three don't dim).
   - The filter bar reads "Filtering by Playwright" (not "Filtering Experience by Playwright") and its match count/source list includes both "Royal Bank of Canada (RBC)" and "Orbit Inventory Management System".
   - Press Escape: filter clears, all dimming and card-opacity effects are removed, filter bar hides.
 - Click the "GitHub Actions" chip (evidenced via both an RBC Experience bullet and the Orbit IMS bullet from Task 1). Confirm matches appear in both Experience and Projects, and the source list names both.
-- Click the "Agile Scrum Methodology" chip (evidenced only via Experience bullets — RBC and Infor both use it, no Projects or Volunteer bullet does). This is the plan's Experience-only match case, completing the spec's required "Experience only, Projects only, Volunteer only, and mixed" coverage. Confirm: the matching RBC and Infor Experience bullets tick amber; every Project card gets `.is-zero-match` (title/meta/tech/link dim to ~62%); the Volunteer entries' bullets all dim and the Treasurer/QA Tester entries show the hollow rail-dot (no card-opacity rule applies to them, since they're `.timeline-entry` not `.project-card`); the source list names only the two Experience employers, no project or volunteer org.
+- Click the "Agile Scrum Methodology" chip (evidenced only via Experience bullets — RBC and Infor both use it, no Projects or Volunteer bullet does). This is the plan's Experience-only match case — one of the spec's four required coverage cases (Experience only, Projects only, Volunteer only, and mixed); the other three are exercised here and in Task 5 Step 4, once Projects/Volunteer-only skills become clickable. Confirm: the matching RBC and Infor Experience bullets tick amber; every Project card gets `.is-zero-match` (title dims to ~62%, meta/tech/link stay full-brightness); the Volunteer entries' bullets all dim and the Treasurer/QA Tester entries show the hollow rail-dot (no card-opacity rule applies to them, since they're `.timeline-entry` not `.project-card`); the source list names only the two Experience employers, no project or volunteer org.
 - Resize to a narrow viewport and repeat the Playwright check — confirm the dimmed Infor Carpool/Fourth Official cards don't overlap or clip oddly in the single-column grid layout.
 
 Stop the dev server when done.
@@ -1375,7 +1379,7 @@ If a screen reader is available, turn it on and navigate the Projects and Volunt
 
 - [ ] **Step 5: Cross-browser/theme check**
 
-In the running dev server, toggle dark mode (the 🌓 button) and confirm: `.project-card` background/border/text all use the theme-aware custom properties correctly (no hardcoded light-mode colors leaking through), and the `.project-card.is-zero-match` dimmed state is still legible (not illegibly faint) in dark mode.
+In the running dev server, toggle dark mode (the 🌓 button) and confirm: `.project-card` background/border/text all use the theme-aware custom properties correctly (no hardcoded light-mode colors leaking through), and the `.project-card.is-zero-match` dimmed title is still legible (not illegibly faint) in **both** light and dark mode — check light mode too, not just dark; a dimmed-text contrast problem here would actually be worse in light mode (the theme with less headroom between `--text-muted` and `--bg`), so dark-mode-only spot checks can miss it.
 
 - [ ] **Step 6: Final full build verification**
 
