@@ -32,12 +32,13 @@ layout: base.njk
 
 <section id="skills">
   <h2>Skills</h2>
+  {% set evidenceSources = resume.experience.concat(resume.projects, resume.volunteer) %}
   {% for group in resume.skills %}
   <div class="skill-group">
     <h3>{{ group.category }}</h3>
     <ul class="skill-chips" role="list">
       {% for item in group.items %}
-      {% if item | isEvidenced(resume.experience) %}
+      {% if item | isEvidenced(evidenceSources) %}
       <li><button type="button" class="chip" data-skill="{{ item }}" aria-pressed="false">{{ item }}</button></li>
       {% else %}
       <li><span class="chip">{{ item }}</span></li>

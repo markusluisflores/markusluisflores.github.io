@@ -1,21 +1,21 @@
 const evidencedCache = new WeakMap();
 
-function evidencedSkillSet(experience) {
-  if (!Array.isArray(experience)) {
+function evidencedSkillSet(sources) {
+  if (!Array.isArray(sources)) {
     return new Set();
   }
-  if (evidencedCache.has(experience)) {
-    return evidencedCache.get(experience);
+  if (evidencedCache.has(sources)) {
+    return evidencedCache.get(sources);
   }
   const set = new Set();
-  experience.forEach(function (job) {
-    (job.bullets || []).forEach(function (bullet) {
+  sources.forEach(function (entry) {
+    (entry.bullets || []).forEach(function (bullet) {
       (bullet.skills || []).forEach(function (skill) {
         set.add(skill);
       });
     });
   });
-  evidencedCache.set(experience, set);
+  evidencedCache.set(sources, set);
   return set;
 }
 
@@ -26,8 +26,8 @@ module.exports = function (eleventyConfig) {
     lstripBlocks: true,
   });
 
-  eleventyConfig.addFilter("isEvidenced", function (skill, experience) {
-    return evidencedSkillSet(experience).has(skill);
+  eleventyConfig.addFilter("isEvidenced", function (skill, sources) {
+    return evidencedSkillSet(sources).has(skill);
   });
 
   return {
