@@ -498,6 +498,7 @@ main > section > h2 {
 }
 
 .project-link {
+  align-self: start;
   margin-top: 0.5rem;
   color: var(--accent-strong);
   font-size: 0.875rem;
@@ -695,6 +696,10 @@ button.chip:focus-visible {
   main {
     display: grid;
     grid-template-columns: var(--sidebar) minmax(0, var(--measure));
+
+    /* Row count must match the number of <main> > section children:
+       .hero's `grid-row: 1 / -1` resolves against this explicit grid,
+       so adding/removing a top-level section requires updating this. */
     grid-template-rows: repeat(5, auto);
     gap: 0 4rem;
     justify-content: center;
@@ -743,6 +748,14 @@ button.chip:focus-visible {
 }
 
 @media (max-width: 640px) {
+  /* No-JS fallback: mobile nav wraps to ~2 lines here, taller than the
+     default --chrome-h. JS overwrites --chrome-h on :root with the real
+     measured height once it runs (inline style wins regardless of source
+     order), so this only matters for no-JS anchor scrolls. */
+  :root {
+    --chrome-h: 6.75rem;
+  }
+
   .site-header {
     flex-wrap: wrap;
     row-gap: 0.5rem;
