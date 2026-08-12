@@ -456,19 +456,19 @@ main > section > h2 {
 }
 
 .project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  align-items: start;
-  gap: 1.25rem;
+  columns: 16rem;
+  column-gap: 1.25rem;
 }
 
 .project-card {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
+  margin-bottom: 1.25rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  break-inside: avoid;
 }
 
 .project-card h3 {
@@ -495,6 +495,7 @@ main > section > h2 {
 
 .project-card ul {
   margin: 0 0 1rem;
+  font-size: 0.9375rem;
 }
 
 .project-link {
