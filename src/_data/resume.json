@@ -27,7 +27,7 @@
         },
         {
           "text": "Automate and maintain regression suites using Playwright and internal testing tools.",
-          "skills": ["Playwright"]
+          "skills": ["Git", "Playwright"]
         },
         {
           "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
@@ -35,7 +35,7 @@
         },
         {
           "text": "Support QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy. Validate successful rollouts and check pod health and logs after each deployment.",
-          "skills": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+          "skills": ["Git", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         }
       ]
     },
@@ -175,7 +175,7 @@
         },
         {
           "text": "Built solo using Claude Code as the primary development tool, running a structured spec, plan, implementation, and review workflow backed by design docs and ADRs.",
-          "skills": ["Claude Code"]
+          "skills": ["Claude Code", "Git"]
         }
       ]
     },
@@ -196,13 +196,13 @@
         },
         {
           "text": "Contributed to CI/CD and code-quality tooling.",
-          "skills": ["GitHub Actions"]
+          "skills": ["Git", "GitHub Actions"]
         }
       ]
     },
     {
       "title": "Infor Carpool Project",
-      "subtitle": "Volunteer",
+      "subtitle": "Company Side Project",
       "dates": "Feb 2019 – May 2022",
       "builtWith": "Laravel, MySQL",
       "links": [],
