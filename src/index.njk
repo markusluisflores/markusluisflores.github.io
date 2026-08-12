@@ -48,6 +48,27 @@ layout: base.njk
   {% endfor %}
 </section>
 
+<section id="projects">
+  <h2>Projects</h2>
+  <div class="project-grid">
+    {% for project in resume.projects %}
+    <article class="project-card" data-source="{{ project.title }}">
+      <h3>{{ project.title }}</h3>
+      <p class="project-meta">{{ project.subtitle }} · {{ project.dates }}</p>
+      {% if project.builtWith %}<p class="project-tech">Built with {{ project.builtWith }}</p>{% endif %}
+      <ul role="list">
+        {% for bullet in project.bullets %}
+        <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+      {% for link in project.links %}
+      <a class="project-link" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }} →</a>
+      {% endfor %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
 <section id="education">
   <h2>Education</h2>
   {% for edu in resume.education %}
