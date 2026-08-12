@@ -367,7 +367,7 @@ Change to:
 <section id="education">
 ```
 
-Note: `data-source` and the `filter-entry` class are deliberately **not** added yet — Task 4 adds them everywhere at once, alongside the JS/CSS that actually reads them, so this task doesn't ship a half-wired attribute. `data-source` on the card is harmless dead markup until then, but keeping it out until Task 4 would mean touching this exact line twice; it's included now since it can't break anything on its own (no CSS or JS reads it yet).
+Note: the `filter-entry` class is deliberately **not** added yet — Task 4 adds it everywhere at once, alongside the JS/CSS that actually reads it, so this task doesn't ship a half-wired attribute. `data-source`, by contrast, **is** included above, in this task — it's harmless dead markup until Task 4 (no CSS or JS reads it yet), and adding it now avoids touching this exact template line twice.
 
 - [ ] **Step 2: Add CSS for the project card grid**
 
@@ -415,12 +415,14 @@ Insert the new rules between them:
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
+  transition: opacity 0.18s ease;
 }
 
 .project-meta {
   margin: 0 0 0.75rem;
   color: var(--text-muted);
   font-size: 0.8125rem;
+  transition: opacity 0.18s ease;
 }
 
 .project-tech {
@@ -428,6 +430,7 @@ Insert the new rules between them:
   color: var(--text-muted);
   font-size: 0.8125rem;
   font-style: italic;
+  transition: opacity 0.18s ease;
 }
 
 .project-card ul {
@@ -445,6 +448,7 @@ Insert the new rules between them:
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
+  transition: opacity 0.18s ease;
 }
 
 .project-link:hover {
@@ -460,7 +464,7 @@ Insert the new rules between them:
 .skill-group {
 ```
 
-`margin-top: auto` on `.project-link` pins the link(s) to the bottom of the card even when sibling cards have different bullet-list heights (flexbox column + `auto` margin), so the three cards' link rows stay visually aligned across a row. The Infor Carpool card (zero links) simply renders no `.project-link` at all — the `{% for link in project.links %}` loop over an empty array produces nothing, no conditional needed.
+`margin-top: auto` on `.project-link` pins each card's *first* link to the bottom of the card even when sibling cards have different bullet-list heights (flexbox column + `auto` margin) — that first link's row lines up across cards regardless of content length above it. It's an approximate alignment, not an exact one: The Fourth Official has two stacked links (`.project-link + .project-link` adds a small top margin between them) while Orbit IMS has one, so their *last* link's row doesn't land at the same height — only the first one does. The Infor Carpool card (zero links) simply renders no `.project-link` at all — the `{% for link in project.links %}` loop over an empty array produces nothing, no conditional needed.
 
 Project-card bullets deliberately have **no bullet marker or `is-match`/`is-dim` styling yet** — that's the shared `.filter-entry ul li` treatment Task 4 introduces. Right now they're plain `<li>` text in a `<ul role="list">`.
 
@@ -585,6 +589,51 @@ Change to:
 ```
 
 `nav-spy.js` needs no changes — it derives its targets from `.site-nav a[href^='#']` at runtime, so both new links are picked up automatically.
+
+- [ ] **Step 2a: Update the sidebar grid's row count**
+
+`src/assets/css/style.css`'s desktop sidebar layout (`@media (min-width: 68rem) and (min-height: 40rem) { main { ... grid-template-rows: repeat(3, auto); ... } }`) hardcodes the number of top-level sections in `<main>` as an explicit grid track count, and `.hero`'s `grid-row: 1 / -1` spans that explicit grid to keep the sidebar pinned alongside all of them. This repo's original implementation plan (`docs/superpowers/plans/2026-08-04-portfolio-site-implementation.md`) documents this as a must-update invariant: *"If a Projects section is ever added, this count must go to 4, or the sidebar will silently stop sticking partway down the new section."* This PR adds two sections (Projects and Volunteer), taking the total from 3 to 5.
+
+In `src/assets/css/style.css`, find:
+
+```css
+  main {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, var(--measure));
+    grid-template-rows: repeat(3, auto);
+```
+
+Change to:
+
+```css
+  main {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, var(--measure));
+    grid-template-rows: repeat(5, auto);
+```
+
+- [ ] **Step 2b: Fix nav overflow on narrow viewports**
+
+Growing the nav from 3 links to 5 makes it too wide to fit on a phone screen, and `.site-nav` has no `flex-wrap` anywhere in the stylesheet — only its parent `.site-header` wraps (`@media (max-width: 640px) { .site-header { flex-wrap: wrap; ... } }`), which doesn't help the nav's own 5 links wrap onto a second line. Left unfixed, this produces a horizontal scrollbar on the whole page at common phone widths (measured ~94-108px of overflow at 375-390px), with the "Volunteer" link rendered fully off-screen — a real, user-facing defect, not a theoretical one.
+
+In `src/assets/css/style.css`, find the existing mobile breakpoint's `.site-nav` rule:
+
+```css
+  .site-nav {
+    gap: 1.1rem;
+  }
+```
+
+Change to:
+
+```css
+  .site-nav {
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+  }
+```
+
+Note the two-value `gap` shorthand (`row-gap column-gap`) rather than a separate `row-gap` declaration alongside `gap: 1.1rem` — declaring `row-gap` first and then `gap` as a single value resets `row-gap` back to `normal`, since `gap: <value>` is shorthand for *both* axes at once and always overrides whatever came before it in the same rule. Caught by running `stylelint` (`declaration-block-no-shorthand-property-overrides`) against this exact edit; the two-value form sets both axes explicitly in one declaration and has nothing after it to override.
 
 - [ ] **Step 3: Extend the `<noscript>` fallback in `base.njk`**
 
@@ -723,6 +772,7 @@ Run `npm run serve`, open `http://localhost:8080/`.
 - Scroll back up and confirm the nav link for the currently-centered section gets `aria-current="location"` (inspect via DevTools, or just watch for the visual "current" nav styling) for all 5 sections, not just the original 3.
 - In DevTools, enable "Emulate CSS media feature prefers-reduced-motion: reduce" and reload — confirm all 5 sections are immediately visible with no fade-in animation.
 - Print-preview the page (Ctrl+P) and confirm Projects and Volunteer both appear fully visible in the preview, not blank/faded.
+- Using DevTools device emulation, check the page at 320px, 375px, 390px, and 412px wide. At each width, confirm: no horizontal scrollbar on the page; all 5 nav links are visible (wrapped onto a second line is fine, cut off or scrolled-away is not); "Volunteer" specifically is not pushed off-screen. This is the check for Step 2b's fix — verify it actually holds at all four widths, not just one.
 
 Stop the dev server when done.
 
@@ -941,7 +991,6 @@ button.chip:focus-visible {
 .project-card.is-zero-match .project-tech,
 .project-card.is-zero-match .project-link {
   opacity: 0.62;
-  transition: opacity 0.18s ease;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -949,7 +998,7 @@ button.chip:focus-visible {
 
 Do **not** insert this rule immediately after `.timeline-entry.is-zero-match::before` (i.e., up near line 451, alongside the rest of the `.project-card` block from Task 2) even though that placement would read more naturally next to the other zero-match rule — it breaks `npm run lint`. `stylelint-config-standard`'s `no-descending-specificity` rule (active in this repo's `.stylelintrc.json`) flags a two-class-plus-tag selector like `.project-card.is-zero-match h3` appearing *before* lower-specificity selectors targeting overlapping elements later in the same file — and at that position it sits above not only `.project-card h3`/`.project-meta`/`.project-tech`/`.project-link` (added later in this same task) but also the unrelated `.skill-group h3` and `.education-entry h3` further down. Confirmed by actually running `stylelint` against both placements: the near-line-451 placement produces 8 errors; placing it here — after all base component styles, immediately before the file's first responsive/reduced-motion `@media` block — produces zero.
 
-(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once. The `transition` matches `.filter-entry ul li.is-dim`'s own `transition: opacity 0.18s ease` — without it, the card's title/meta/tech/link would snap instantly to 0.62 while its bullets fade smoothly over 0.18s, a visible inconsistency within the same card.)
+(`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once. This rule deliberately carries **no** `transition` of its own — the transition lives on the base `.project-card h3`/`.project-meta`/`.project-tech`/`.project-link` rules from Task 2 Step 2 instead, exactly mirroring how `.filter-entry ul li`'s base rule carries the transition while `.filter-entry ul li.is-dim` itself carries only `opacity`. Putting the transition on the `.is-zero-match` variant instead — the first version of this step did — makes it one-directional: it'd animate the fade *in* when the class is added, but the class removal on filter-clear snaps straight back to full opacity with no transition at all, since the removed rule's `transition` disappears along with it. Declaring the transition on the always-present base rule makes both directions animate.)
 
 Then find the `@media print` block — its exact line number shifts as earlier tasks in this plan add lines above it, so search for the block by its `@media print {` opening rather than a line number. It already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
 
@@ -1272,7 +1321,7 @@ Expected: build exits 0, and the deduplicated list contains exactly 31 skills: t
 Run `npm run serve`, open `http://localhost:8080/`.
 
 - Confirm `Laravel`, `pgvector`, `Supabase`, `RAG`, `Claude API`, `Vitest`, `Claude Code`, and `Communication` chips now render as buttons (cursor: pointer on hover, visible hover state) rather than plain inert text.
-- Click `Claude Code`. Confirm: The Fourth Official's 4th bullet ("Built solo using Claude Code...") ticks amber; the card is not dimmed (it has a match); Orbit IMS and Infor Carpool cards both get `.is-zero-match` dimming (neither bullet is tagged `Claude Code`); Experience and Volunteer entries also dim (no match there either); filter bar reads "Filtering by Claude Code" with the source list naming only "The Fourth Official".
+- Click `Claude Code`. Confirm: The Fourth Official's 4th bullet ("Built solo using Claude Code...") ticks amber; the card is not dimmed (it has a match); Orbit IMS and Infor Carpool cards both get `.is-zero-match` dimming (neither bullet is tagged `Claude Code`); Experience and Volunteer entries also dim (no match there either); filter bar reads "Filtering by Claude Code" with the source list naming only "The Fourth Official". This is also the plan's check for the spec's required "scroll-to-first-match lands inside a `.project-card`" case (a taller, differently-shaped container than a `.timeline-entry`) — since `Claude Code`'s only match anywhere on the page is this one bullet, confirm the page actually scrolled to bring that bullet into view (not just that it's ticked amber somewhere off-screen), landing below the sticky header/filter-bar chrome rather than behind it.
 - Click `Laravel`. Confirm it matches only the Infor Carpool card's first bullet, and correctly dims everything else including the RBC/Infor **Experience** entries (which have no Laravel bullet) — this is the cross-section case that would have been silently broken before Task 4.
 - Click `Communication`. This is the plan's one Volunteer-only match case (the spec's "Filter extension" regression-risk section explicitly requires testing a Volunteer-only match, and this is the only skill tagged on any Volunteer bullet). Confirm: the QA Tester entry's third bullet ("Provided feedback on the usability...") ticks amber and stays full-opacity; the QA Tester entry's other two (untagged) bullets dim; the Treasurer entry (no tagged bullets at all) gets its own bullets dimmed and, since it's a `.timeline-entry` not a `.project-card`, shows the hollow rail-dot `.is-zero-match::before` treatment rather than the card-specific opacity rule; every Experience entry and every Project card also dim/zero-match (no `Communication` tag anywhere else); filter bar reads "Filtering by Communication" with the source list naming only "Empowered Futures".
 - Click `pgvector`, then also click `RAG` (multi-select, OR logic per the existing chip behavior). Confirm the match count includes multiple bullets within The Fourth Official's card, and the "N matches in The Fourth Official" wording reads correctly (source list de-duplicates repeated card names).
@@ -1307,10 +1356,11 @@ Expected: all three exit 0.
 
 - [ ] **Step 2: Run the link checker**
 
+This is the project's real CI command (`.github/workflows/ci.yml`), not an invented one:
 ```bash
-npx linkinator _site/index.html --skip "^(?!http://localhost)"
+npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
 ```
-If the project's existing `linkinator` invocation differs (check `package.json`/`ci.yml` for the actual flags already in use — don't invent new ones), use that exact command instead. Expected: no broken links reported, including the two new external links (`github.com/markusluisflores/the-fourth-official`, `the-fourth-official-production.up.railway.app`) and the existing Orbit IMS repo link.
+Expected: no broken links reported, including the two new external links (`github.com/markusluisflores/the-fourth-official`, `the-fourth-official-production.up.railway.app`) and the existing Orbit IMS repo link.
 
 - [ ] **Step 3: Full keyboard-only pass**
 
