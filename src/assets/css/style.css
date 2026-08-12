@@ -267,6 +267,7 @@ main > section > h2 {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  break-after: avoid;
 }
 
 .hero {
@@ -460,9 +461,21 @@ main > section > h2 {
   column-gap: 1.25rem;
 }
 
+/*
+ * Deliberately plain block flow, no flexbox. Print rendering (both
+ * Chromium and WebKit) has a documented history of not reliably honoring
+ * break-inside: avoid on a flex formatting context or between its flex
+ * items — confirmed empirically here: with .project-card as a flex
+ * column, Chromium fragmented a card mid-content, directly between two
+ * sibling .project-link flex items, regardless of which element(s) in
+ * the tree carried break-inside: avoid. A flex-direction: column
+ * container with no flex-grow/shrink and only one-directional child
+ * margins produces an identical visual stack to plain block flow anyway
+ * (block-level children in normal flow lay out top-to-bottom the same
+ * way), so nothing is gained by keeping flex here — removing it fixes
+ * pagination in both engines at once.
+ */
 .project-card {
-  display: flex;
-  flex-direction: column;
   padding: 1.5rem;
   margin-bottom: 1.25rem;
   background: var(--surface);
@@ -499,7 +512,8 @@ main > section > h2 {
 }
 
 .project-link {
-  align-self: start;
+  display: block;
+  width: fit-content;
   margin-top: 0.5rem;
   color: var(--accent-strong);
   font-size: 0.875rem;
@@ -821,5 +835,23 @@ button.chip:focus-visible {
   .site-header,
   .filter-bar {
     display: none;
+  }
+
+  /*
+   * The multi-column masonry layout is a screen-viewport space-efficiency
+   * feature — it has no benefit in print, where pages are already a
+   * sequential vertical flow, and CSS multi-column's page-fragmentation
+   * behavior is inconsistent enough across engines to actively work
+   * against pagination. `columns: 1` is not enough on its own — it still
+   * establishes a multicol formatting context, and Chromium does not
+   * reliably honor break-inside: avoid on a descendant of any multicol
+   * container during print fragmentation (confirmed empirically: a card
+   * still split page-to-page with columns: 1 in place). `columns: unset`
+   * removes the multicol context entirely, falling back to plain block
+   * flow, where break-inside: avoid on .project-card behaves normally.
+   */
+  .project-grid {
+    columns: unset;
+    display: block;
   }
 }
