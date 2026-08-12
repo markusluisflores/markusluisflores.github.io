@@ -803,7 +803,7 @@ Change to:
 
 - [ ] **Step 3: Generalize the bullet/tick-mark/filter-state CSS**
 
-In `src/assets/css/style.css`, find the block from `.timeline-entry ul` through `.timeline-entry ul li.is-dim` (four rules):
+In `src/assets/css/style.css`, find the block from `.timeline-entry ul` through `.timeline-entry ul li.is-dim` (five rules — the container, the base `li`, its `::before` tick mark, the `.is-match::before` variant, and `.is-dim`):
 
 ```css
 .timeline-entry ul {
@@ -919,14 +919,21 @@ Leave `.timeline-entry::before` (the rail-dot pseudo-element, lines ~381-394) an
 
 Cards have no rail dot to hollow out, so they need their own "no bullets matched" visual. **Do not** dim the whole `.project-card` via a single `opacity` rule — its bullets already get `opacity: 0.62` individually from the `.filter-entry ul li.is-dim` rule (Step 3), and CSS opacity compounds down the tree, so an additional card-level `opacity: 0.62` would render those bullets at an effective ~0.62 × 0.62 ≈ 0.38, visibly more washed-out than a zero-match Experience/Volunteer entry's bullets (which stay at a clean 0.62, since timeline entries have no equivalent parent-level opacity rule). Instead, dim only the card's own direct children that sit *outside* the bulleted list — title, meta line, tech line, and link — to the same 0.62, which reads as a uniformly-dimmed card without any element ever having two opacity effects multiplied together.
 
-In `src/assets/css/style.css`, immediately after the `.timeline-entry.is-zero-match::before` rule, add:
+**Placement matters here, not just content.** In `src/assets/css/style.css`, find:
 
 ```css
-.timeline-entry.is-zero-match::before {
-  background: var(--bg);
-  box-shadow:
-    0 0 0 4px var(--bg),
-    inset 0 0 0 1.5px var(--border-strong);
+button.chip:focus-visible {
+  outline-color: var(--text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+```
+
+Change to:
+
+```css
+button.chip:focus-visible {
+  outline-color: var(--text);
 }
 
 .project-card.is-zero-match h3,
@@ -937,12 +944,14 @@ In `src/assets/css/style.css`, immediately after the `.timeline-entry.is-zero-ma
   transition: opacity 0.18s ease;
 }
 
-.project-grid {
+@media (prefers-reduced-motion: no-preference) {
 ```
+
+Do **not** insert this rule immediately after `.timeline-entry.is-zero-match::before` (i.e., up near line 451, alongside the rest of the `.project-card` block from Task 2) even though that placement would read more naturally next to the other zero-match rule — it breaks `npm run lint`. `stylelint-config-standard`'s `no-descending-specificity` rule (active in this repo's `.stylelintrc.json`) flags a two-class-plus-tag selector like `.project-card.is-zero-match h3` appearing *before* lower-specificity selectors targeting overlapping elements later in the same file — and at that position it sits above not only `.project-card h3`/`.project-meta`/`.project-tech`/`.project-link` (added later in this same task) but also the unrelated `.skill-group h3` and `.education-entry h3` further down. Confirmed by actually running `stylelint` against both placements: the near-line-451 placement produces 8 errors; placing it here — after all base component styles, immediately before the file's first responsive/reduced-motion `@media` block — produces zero.
 
 (`0.62` matches the existing `.filter-entry ul li.is-dim` opacity value — the bullets inside a zero-match card already dim to 0.62 via that shared rule; this adds the same value to the card's own title/meta/tech/link so the whole card reads as uniformly dimmed, with no element affected by more than one opacity rule at once. The `transition` matches `.filter-entry ul li.is-dim`'s own `transition: opacity 0.18s ease` — without it, the card's title/meta/tech/link would snap instantly to 0.62 while its bullets fade smoothly over 0.18s, a visible inconsistency within the same card.)
 
-Then find the `@media print` block (around line 697) — it already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
+Then find the `@media print` block — its exact line number shifts as earlier tasks in this plan add lines above it, so search for the block by its `@media print {` opening rather than a line number. It already references `.timeline-entry ul li.is-dim` and `.timeline-entry.is-zero-match::before`, both of which must stay force-reset to full visibility when printing (a printed resume shouldn't show whatever filter state happened to be active on screen). This is the **only** block in the stylesheet that needs updating here — there is no separate `@media (prefers-reduced-motion: reduce)` block in this codebase; the site only has `@media (prefers-reduced-motion: no-preference)` blocks, which opt *into* the fade-in animation rather than opting out of it, and neither of those references `is-dim`/`is-zero-match` at all (verify this against the real file before editing — don't search for a block that doesn't exist).
 
 In the `@media print` block, find:
 ```css
@@ -1100,6 +1109,7 @@ Since no Projects/Volunteer skill chips are clickable yet (Task 5 hasn't run), f
   - The filter bar reads "Filtering by Playwright" (not "Filtering Experience by Playwright") and its match count/source list includes both "Royal Bank of Canada (RBC)" and "Orbit Inventory Management System".
   - Press Escape: filter clears, all dimming and card-opacity effects are removed, filter bar hides.
 - Click the "GitHub Actions" chip (evidenced via both an RBC Experience bullet and the Orbit IMS bullet from Task 1). Confirm matches appear in both Experience and Projects, and the source list names both.
+- Click the "Agile Scrum Methodology" chip (evidenced only via Experience bullets — RBC and Infor both use it, no Projects or Volunteer bullet does). This is the plan's Experience-only match case, completing the spec's required "Experience only, Projects only, Volunteer only, and mixed" coverage. Confirm: the matching RBC and Infor Experience bullets tick amber; every Project card gets `.is-zero-match` (title/meta/tech/link dim to ~62%); the Volunteer entries' bullets all dim and the Treasurer/QA Tester entries show the hollow rail-dot (no card-opacity rule applies to them, since they're `.timeline-entry` not `.project-card`); the source list names only the two Experience employers, no project or volunteer org.
 - Resize to a narrow viewport and repeat the Playwright check — confirm the dimmed Infor Carpool/Fourth Official cards don't overlap or clip oddly in the single-column grid layout.
 
 Stop the dev server when done.
