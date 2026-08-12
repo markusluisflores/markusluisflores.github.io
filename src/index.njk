@@ -79,3 +79,20 @@ layout: base.njk
   </div>
   {% endfor %}
 </section>
+
+<section id="volunteer">
+  <h2>Volunteer Experience</h2>
+  <ol class="timeline" role="list">
+    {% for entry in resume.volunteer %}
+    <li class="timeline-entry" data-source="{{ entry.org }}">
+      <h3>{{ entry.role }}</h3>
+      <p class="timeline-meta">{{ entry.org }} · {{ entry.dates }}</p>
+      <ul role="list">
+        {% for bullet in entry.bullets %}
+        <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ol>
+</section>

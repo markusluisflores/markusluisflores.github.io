@@ -662,7 +662,9 @@ button.chip:focus-visible {
 @media (prefers-reduced-motion: no-preference) {
   #experience,
   #skills,
-  #education {
+  #projects,
+  #education,
+  #volunteer {
     opacity: 0;
     transform: translateY(8px);
     transition:
@@ -672,7 +674,9 @@ button.chip:focus-visible {
 
   #experience.is-visible,
   #skills.is-visible,
-  #education.is-visible {
+  #projects.is-visible,
+  #education.is-visible,
+  #volunteer.is-visible {
     opacity: 1;
     transform: translateY(0);
   }
@@ -690,7 +694,7 @@ button.chip:focus-visible {
   main {
     display: grid;
     grid-template-columns: var(--sidebar) minmax(0, var(--measure));
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(5, auto);
     gap: 0 4rem;
     justify-content: center;
     max-width: none;
@@ -744,7 +748,8 @@ button.chip:focus-visible {
   }
 
   .site-nav {
-    gap: 1.1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
   }
 
   .site-footer {
@@ -775,7 +780,9 @@ button.chip:focus-visible {
 
   #experience,
   #skills,
-  #education {
+  #projects,
+  #education,
+  #volunteer {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
