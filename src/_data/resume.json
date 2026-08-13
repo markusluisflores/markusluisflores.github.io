@@ -10,32 +10,32 @@
   },
   "experience": [
     {
-      "role": "SDET – Quality Engineer",
+      "role": "Software Development Engineer in Test",
       "company": "Royal Bank of Canada (RBC)",
       "dates": "May 2025 – Present",
       "bullets": [
         {
-          "text": "Develop and execute comprehensive test strategies and technical solutions for Wealth Management Technology."
+          "text": "Design and develop test automation and technical solutions for Charles River Development (CRD), RBC's trading platform in Wealth Management Technology."
         },
         {
-          "text": "Collaborate in Agile ceremonies to align QA efforts with project deliverables.",
-          "skills": ["Agile Scrum Methodology"]
-        },
-        {
-          "text": "Design optimized test cases for end-to-end and integration testing, using model-based design tools (ConformIQ, Hexawise) and, more recently, AI-assisted design with Copilot driven by Jira requirements.",
-          "skills": ["ConformIQ", "Hexawise", "Copilot"]
-        },
-        {
-          "text": "Automate and maintain regression suites using Playwright and internal testing tools.",
+          "text": "Build and maintain automated regression suites using Playwright and RBC's internal testing frameworks.",
           "skills": ["Git", "Playwright"]
         },
         {
-          "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
-          "skills": ["Jira", "qTest"]
+          "text": "Design end-to-end and integration test cases with model-based design tools (ConformIQ, Hexawise), and drive AI-assisted test generation from Jira requirements using GitHub Copilot.",
+          "skills": ["ConformIQ", "Hexawise", "GitHub Copilot"]
         },
         {
-          "text": "Support QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy. Validate successful rollouts and check pod health and logs after each deployment.",
+          "text": "Deploy and validate QA environments on Red Hat OpenShift through GitHub Actions and UrbanCode Deploy pipelines, monitoring pod health and logs after each rollout.",
           "skills": ["Git", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+        },
+        {
+          "text": "Collaborate in Agile ceremonies to align technical work with sprint deliverables.",
+          "skills": ["Agile Scrum Methodology"]
+        },
+        {
+          "text": "Manage test execution and defect triage in Jira and qTest, documenting results and reporting status to stakeholders.",
+          "skills": ["Jira", "qTest"]
         }
       ]
     },
@@ -101,7 +101,7 @@
     },
     {
       "category": "AI Tools",
-      "items": ["Claude Code", "Claude API", "RAG", "Copilot", "Cursor", "n8n"]
+      "items": ["Claude Code", "Claude API", "RAG", "GitHub Copilot", "Cursor", "n8n"]
     },
     {
       "category": "Testing",
