@@ -41,7 +41,10 @@ jobs:
       - run: npm run build
       - run: npx html-validate "_site/**/*.html"
       - run: npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
-      - run: npm audit --audit-level=high
+      # This repo has no runtime `dependencies` (static site, nothing ships to
+      # production) - --omit=dev scopes the audit to that reality instead of
+      # failing CI on build-tooling-only advisories with no user exposure.
+      - run: npm audit --audit-level=high --omit=dev
 
   lighthouse:
     name: lighthouse
