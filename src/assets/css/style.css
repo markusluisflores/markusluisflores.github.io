@@ -486,18 +486,25 @@ main > section > h2 {
 }
 
 /*
- * Deliberately plain block flow, no flexbox. Print rendering (both
- * Chromium and WebKit) has a documented history of not reliably honoring
- * break-inside: avoid on a flex formatting context or between its flex
- * items — confirmed empirically here: with .project-card as a flex
- * column, Chromium fragmented a card mid-content, directly between two
- * sibling .project-link flex items, regardless of which element(s) in
- * the tree carried break-inside: avoid. A flex-direction: column
- * container with no flex-grow/shrink and only one-directional child
- * margins produces an identical visual stack to plain block flow anyway
- * (block-level children in normal flow lay out top-to-bottom the same
- * way), so nothing is gained by keeping flex here — removing it fixes
- * pagination in both engines at once.
+ * Deliberately plain block flow, no flexbox, specifically for THIS
+ * element. Print rendering (both Chromium and WebKit) has a documented
+ * history of not reliably honoring break-inside: avoid between a flex
+ * container's own flex-item children — confirmed empirically here: with
+ * .project-card as a flex column, Chromium fragmented a card
+ * mid-content, directly between two sibling .project-link flex items,
+ * regardless of which element(s) in the tree carried break-inside:
+ * avoid. .project-card had no functional need for flex (a
+ * flex-direction: column container with no flex-grow/shrink and only
+ * one-directional child margins produces an identical visual stack to
+ * plain block flow), so removing it was free. This is NOT a blanket
+ * "never use flex near break-inside: avoid" rule, though — .timeline-entry
+ * (below) still legitimately uses flex for its .timeline-meta
+ * `order: -1` reordering trick, which plain block flow can't replicate
+ * without changing DOM/source order (a real accessibility-relevant
+ * decision, not this fix's to make). Tested across 9 paper-size/margin
+ * combinations plus stress content: .timeline-entry's meta and h3 never
+ * land on different pages, so its flex context hasn't reproduced the
+ * same fragmentation failure .project-card's did.
  */
 .project-card {
   padding: 1.5rem;
