@@ -39,6 +39,23 @@ docs: update CONTRIBUTING with the lint workflow
 chore: update Eleventy to v3.2
 ```
 
+## Print Layout Checklist
+
+This site's print stylesheet (`@media print` in `src/assets/css/style.css`) fights pagination bugs that are easy to reintroduce without noticing, because they're invisible on screen and only show up in an actual paginated export.
+
+**The root cause, if you hit one of these again:** neither Chromium nor WebKit reliably honors `break-inside: avoid` (or `break-after: avoid`) on an element that is itself a flex or CSS Grid item — the browser will still split it across a page boundary. The only pattern that has proven reliable is removing `display: flex`/`display: grid` from the element in question (or its parent formatting context) in favor of plain block flow, then applying the break rules to the resulting block-level elements. `columns:` (CSS multi-column) has the same problem for its columned children and needs to be turned off in print (`columns: unset; display: block;`) rather than fixed with break rules.
+
+Elements currently relying on this pattern — treat any of these as a regression if a future change reintroduces `flex`/`grid`/`columns` on them without re-verifying print output: `.project-card`, `.project-grid`, `.filter-entry ul` / `.filter-entry ul li`, `.education-entry`, `main > section > h2`. `.timeline-entry h3` / `.timeline-entry .timeline-meta` also carry `break-after: avoid`, but `.timeline-entry` itself is a deliberate exception to the pattern above, not an instance of it — it's still `display: flex` (needed for the `order: -1` meta-reordering trick) and has tested clean across 9 paper-size/margin combinations without needing the flex removed. Don't "fix" it by stripping its flex; do re-verify print output if you change it.
+
+**If you touch layout CSS for the Experience, Projects, Volunteer Experience, or Education sections, or anything under `.filter-entry`/`.timeline-entry`, verify print output before opening a PR:**
+
+1. `npm run build`, then `npm run serve` and open the site at its `localhost` URL — not `_site/index.html` directly via `file://`. This site's asset links are root-absolute (`/assets/css/style.css`), which a `file://` URL can't resolve; opening the raw file loads no CSS at all, silently defeating every check below.
+2. Print to PDF (Ctrl/Cmd+P → Save as PDF) and open the result. Check in both a Chromium-based browser and Safari/WebKit if you have access to one — both engines have independently caused these bugs before, and a fix verified in only one isn't fully verified.
+3. Check every page break for: a card, list item, or entry split across two pages; a heading or meta line stranded alone at the bottom of a page with its content pushed to the next.
+4. Repeat for at least one narrow-content and one long-content scenario (e.g. an active skill filter that leaves few bullets, and no filter active with everything showing) — pagination bugs are content-length-dependent and won't show up in every configuration.
+
+A visual DOM inspection is not sufficient — these bugs only manifest in the browser's actual print layout engine, which differs from screen layout.
+
 ## Bug Reports
 
 See [SECURITY.md](SECURITY.md) for security vulnerabilities.
