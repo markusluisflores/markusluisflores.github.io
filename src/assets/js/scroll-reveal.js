@@ -7,7 +7,9 @@
   // OS setting from reduce to no-preference mid-session (CSS media queries
   // re-evaluate live, but a one-time JS check does not), which would strand
   // sections at opacity: 0 with nothing to ever add is-visible back.
-  var sections = document.querySelectorAll("#experience, #skills, #education");
+  var sections = document.querySelectorAll(
+    "#experience, #skills, #projects, #education, #volunteer"
+  );
 
   if (!("IntersectionObserver" in window)) {
     sections.forEach(function (section) {

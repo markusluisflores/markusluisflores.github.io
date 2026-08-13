@@ -17,7 +17,7 @@ layout: base.njk
   <h2>Experience</h2>
   <ol class="timeline" role="list">
     {% for job in resume.experience %}
-    <li class="timeline-entry" data-company="{{ job.company }}">
+    <li class="timeline-entry filter-entry" data-source="{{ job.company }}">
       <h3>{{ job.role }}</h3>
       <p class="timeline-meta">{{ job.company }} · {{ job.dates }}</p>
       <ul role="list">
@@ -32,12 +32,13 @@ layout: base.njk
 
 <section id="skills">
   <h2>Skills</h2>
+  {% set evidenceSources = resume.experience.concat(resume.projects, resume.volunteer) %}
   {% for group in resume.skills %}
   <div class="skill-group">
     <h3>{{ group.category }}</h3>
     <ul class="skill-chips" role="list">
       {% for item in group.items %}
-      {% if item | isEvidenced(resume.experience) %}
+      {% if item | isEvidenced(evidenceSources) %}
       <li><button type="button" class="chip" data-skill="{{ item }}" aria-pressed="false">{{ item }}</button></li>
       {% else %}
       <li><span class="chip">{{ item }}</span></li>
@@ -46,6 +47,27 @@ layout: base.njk
     </ul>
   </div>
   {% endfor %}
+</section>
+
+<section id="projects">
+  <h2>Projects</h2>
+  <div class="project-grid">
+    {% for project in resume.projects %}
+    <article class="project-card filter-entry" data-source="{{ project.title }}">
+      <h3>{{ project.title }}</h3>
+      <p class="project-meta">{{ project.subtitle }} · {{ project.dates }}</p>
+      {% if project.builtWith %}<p class="project-tech">Built with {{ project.builtWith }}</p>{% endif %}
+      <ul role="list">
+        {% for bullet in project.bullets %}
+        <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+      {% for link in project.links %}
+      <a class="project-link" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }} →</a>
+      {% endfor %}
+    </article>
+    {% endfor %}
+  </div>
 </section>
 
 <section id="education">
@@ -57,4 +79,21 @@ layout: base.njk
     {% if edu.note %}<p class="education-note">{{ edu.note }}</p>{% endif %}
   </div>
   {% endfor %}
+</section>
+
+<section id="volunteer">
+  <h2>Volunteer Experience</h2>
+  <ol class="timeline" role="list">
+    {% for entry in resume.volunteer %}
+    <li class="timeline-entry filter-entry" data-source="{{ entry.org }}">
+      <h3>{{ entry.role }}</h3>
+      <p class="timeline-meta">{{ entry.org }} · {{ entry.dates }}</p>
+      <ul role="list">
+        {% for bullet in entry.bullets %}
+        <li{% if bullet.skills %} data-skills="{{ bullet.skills | join('|') }}"{% endif %}>{{ bullet.text }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ol>
 </section>

@@ -27,7 +27,7 @@
         },
         {
           "text": "Automate and maintain regression suites using Playwright and internal testing tools.",
-          "skills": ["Playwright"]
+          "skills": ["Git", "Playwright"]
         },
         {
           "text": "Manage test execution and defect triage, providing test documentation and status updates to stakeholders.",
@@ -35,7 +35,7 @@
         },
         {
           "text": "Support QA environment deployments on Red Hat OpenShift using GitHub Actions and UrbanCode Deploy. Validate successful rollouts and check pod health and logs after each deployment.",
-          "skills": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+          "skills": ["Git", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         }
       ]
     },
@@ -89,18 +89,25 @@
       "items": [
         "Java",
         "PHP",
+        "Laravel",
         "Node.js",
         "SQL",
         "NoSQL",
+        "pgvector",
+        "Supabase",
         "Docker",
         "Landmark Pattern Language (LPL)"
       ]
     },
-    { "category": "AI Tools", "items": ["Claude Code", "Copilot", "Cursor", "n8n"] },
+    {
+      "category": "AI Tools",
+      "items": ["Claude Code", "Claude API", "RAG", "Copilot", "Cursor", "n8n"]
+    },
     {
       "category": "Testing",
       "items": [
         "Playwright",
+        "Vitest",
         "Selenium",
         "Postman",
         "qTest",
@@ -111,7 +118,7 @@
     },
     {
       "category": "DevOps",
-      "items": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
+      "items": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy", "Railway"]
     },
     {
       "category": "Others",
@@ -137,6 +144,79 @@
       ]
     }
   ],
+  "projects": [
+    {
+      "title": "The Fourth Official",
+      "subtitle": "Personal Project",
+      "dates": "Jul 2026 – Present",
+      "builtWith": "Next.js, Supabase Postgres + pgvector, Voyage embeddings, Claude Haiku 4.5, Vitest, Railway",
+      "links": [
+        {
+          "label": "GitHub repo",
+          "url": "https://github.com/markusluisflores/the-fourth-official"
+        },
+        {
+          "label": "Live demo (password on request)",
+          "url": "https://the-fourth-official-production.up.railway.app/"
+        }
+      ],
+      "bullets": [
+        {
+          "text": "Built a hybrid retrieval pipeline over the IFAB Laws of the Game, fusing pgvector similarity search and Postgres full-text search with Reciprocal Rank Fusion in a single SQL query.",
+          "skills": ["pgvector", "Supabase", "SQL", "RAG"]
+        },
+        {
+          "text": "Generated grounded answers with Claude using native citations, streaming claim-to-passage links alongside a panel showing every retrieved passage, its similarity score, and whether the answer used it.",
+          "skills": ["Claude API", "Next.js", "RAG"]
+        },
+        {
+          "text": "Tuned retrieval against measured evals (recall@8, MRR) and calibrated a relevance gate that abstains on off-topic questions before any generation spend.",
+          "skills": ["RAG", "Vitest"]
+        },
+        {
+          "text": "Built solo using Claude Code as the primary development tool, running a structured spec, plan, implementation, and review workflow backed by design docs and ADRs.",
+          "skills": ["Claude Code", "Git"]
+        }
+      ]
+    },
+    {
+      "title": "Orbit Inventory Management System",
+      "subtitle": "Team Capstone Project",
+      "dates": "Sep 2024 – May 2025",
+      "builtWith": "Next.js, React.js, TypeScript, Mantine, Firebase",
+      "links": [{ "label": "GitHub repo", "url": "https://github.com/ragustinesantos/orbit-ims" }],
+      "bullets": [
+        {
+          "text": "Designed and developed core application features and workflows based on team requirements, from UI components to business logic.",
+          "skills": ["Next.js", "React.js", "TypeScript", "Mantine", "HTML", "CSS", "JavaScript"]
+        },
+        {
+          "text": "Set up Playwright test automation from scratch and wrote the initial test suite covering core CRUD flows.",
+          "skills": ["Playwright"]
+        },
+        {
+          "text": "Contributed to CI/CD and code-quality tooling.",
+          "skills": ["Git", "GitHub Actions"]
+        }
+      ]
+    },
+    {
+      "title": "Infor Carpool Project",
+      "subtitle": "Company Side Project",
+      "dates": "Feb 2019 – May 2022",
+      "builtWith": "Laravel, MySQL",
+      "links": [],
+      "bullets": [
+        {
+          "text": "Built a mobile carpool booking application with Infor's Community of Business Analysts, as part of a 5-person team.",
+          "skills": ["Laravel", "PHP", "SQL"]
+        },
+        {
+          "text": "Won Infor's Innovation Flight Central Shark Tank competition and Habi Team of the Year at Infor's Sinagtala Awards."
+        }
+      ]
+    }
+  ],
   "education": [
     {
       "degree": "Diploma in Software Development",
@@ -151,6 +231,36 @@
       "location": "Manila, Philippines",
       "dates": "May 2014 – Aug 2018",
       "note": "5x Dean's Lister"
+    }
+  ],
+  "volunteer": [
+    {
+      "role": "Quality Assurance Tester",
+      "org": "Empowered Futures",
+      "dates": "June 2024",
+      "bullets": [
+        { "text": "Performed end-to-end testing for the Empowered Futures Connect platform." },
+        {
+          "text": "Documented scenarios, steps to replicate, and test evidence on issues and concerns found during software testing."
+        },
+        {
+          "text": "Provided feedback on the usability of the application for different roles and perspectives.",
+          "skills": ["Communication"]
+        }
+      ]
+    },
+    {
+      "role": "Treasurer",
+      "org": "SAIT Beekeeping Club",
+      "dates": "June 2024 – April 2025",
+      "bullets": [
+        {
+          "text": "Participated in hive inspections, honey jarring, and other club activities as an active member."
+        },
+        {
+          "text": "Served as treasurer, auditing all financial transactions and managing the club's finances."
+        }
+      ]
     }
   ]
 }

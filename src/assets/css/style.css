@@ -267,6 +267,7 @@ main > section > h2 {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  break-after: avoid;
 }
 
 .hero {
@@ -398,6 +399,7 @@ main > section > h2 {
   margin: 0 0 0.3rem;
   color: var(--text-muted);
   font-size: 0.8125rem;
+  break-after: avoid;
 }
 
 .timeline-entry h3 {
@@ -406,25 +408,48 @@ main > section > h2 {
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.01em;
+  break-after: avoid;
 }
 
-.timeline-entry ul {
-  display: grid;
-  gap: 0.65rem;
+/*
+ * Plain block flow, not display: grid — grid (like the flex formatting
+ * context .project-card used to have) doesn't reliably honor
+ * break-inside: avoid for its own items during print fragmentation in
+ * this codebase's testing. break-inside: avoid on this now-block-level
+ * <ul> is what actually stops the bullet list itself from splitting
+ * between two <li> items across a page boundary (the reported bug);
+ * the previous grid gap is replaced with margin-based spacing on the
+ * <li> below.
+ */
+.filter-entry ul {
   max-width: 58ch;
   margin: 0;
   padding: 0;
   list-style: none;
+  break-inside: avoid;
 }
 
-.timeline-entry ul li {
+.filter-entry ul li {
   position: relative;
   padding-left: 1.5rem;
   line-height: 1.6;
   transition: opacity 0.18s ease;
+
+  /* Replaces the removed `gap: 0.65rem` from .filter-entry ul's former
+     display: grid. */
+  margin-bottom: 0.65rem;
+
+  /* Secondary protection: stops a single bullet's own wrapped text from
+     splitting mid-line, in addition to .filter-entry ul's break-inside
+     above (which stops the list from splitting between bullets). */
+  break-inside: avoid;
 }
 
-.timeline-entry ul li::before {
+.filter-entry ul li:last-child {
+  margin-bottom: 0;
+}
+
+.filter-entry ul li::before {
   content: "";
   position: absolute;
   top: 0.75em;
@@ -438,13 +463,13 @@ main > section > h2 {
     height 0.18s ease;
 }
 
-.timeline-entry ul li.is-match::before {
+.filter-entry ul li.is-match::before {
   width: 0.95rem;
   height: 2px;
   background: var(--accent);
 }
 
-.timeline-entry ul li.is-dim {
+.filter-entry ul li.is-dim {
   opacity: 0.62;
 }
 
@@ -453,6 +478,88 @@ main > section > h2 {
   box-shadow:
     0 0 0 4px var(--bg),
     inset 0 0 0 1.5px var(--border-strong);
+}
+
+.project-grid {
+  columns: 16rem;
+  column-gap: 1.25rem;
+}
+
+/*
+ * Deliberately plain block flow, no flexbox, specifically for THIS
+ * element. Print rendering (both Chromium and WebKit) has a documented
+ * history of not reliably honoring break-inside: avoid between a flex
+ * container's own flex-item children — confirmed empirically here: with
+ * .project-card as a flex column, Chromium fragmented a card
+ * mid-content, directly between two sibling .project-link flex items,
+ * regardless of which element(s) in the tree carried break-inside:
+ * avoid. .project-card had no functional need for flex (a
+ * flex-direction: column container with no flex-grow/shrink and only
+ * one-directional child margins produces an identical visual stack to
+ * plain block flow), so removing it was free. This is NOT a blanket
+ * "never use flex near break-inside: avoid" rule, though — .timeline-entry
+ * (below) still legitimately uses flex for its .timeline-meta
+ * `order: -1` reordering trick, which plain block flow can't replicate
+ * without changing DOM/source order (a real accessibility-relevant
+ * decision, not this fix's to make). Tested across 9 paper-size/margin
+ * combinations plus stress content: .timeline-entry's meta and h3 never
+ * land on different pages, so its flex context hasn't reproduced the
+ * same fragmentation failure .project-card's did.
+ */
+.project-card {
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  break-inside: avoid;
+}
+
+.project-card h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  transition: opacity 0.18s ease;
+  break-after: avoid;
+}
+
+.project-meta {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.project-tech {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-style: italic;
+}
+
+.project-card ul {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+}
+
+.project-link {
+  display: block;
+  width: fit-content;
+  margin-top: 0.5rem;
+  color: var(--accent-strong);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.project-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.project-link + .project-link {
+  margin-top: 0.35rem;
 }
 
 .skill-group {
@@ -527,6 +634,7 @@ button.chip[aria-pressed="true"] {
 
 .education-entry {
   padding: 1.25rem 0;
+  break-inside: avoid;
 }
 
 .education-entry:first-of-type {
@@ -581,6 +689,7 @@ button.chip[aria-pressed="true"] {
 .theme-toggle:focus-visible,
 .download-resume:focus-visible,
 .filter-clear:focus-visible,
+.project-link:focus-visible,
 button.chip:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -596,10 +705,16 @@ button.chip:focus-visible {
   outline-color: var(--text);
 }
 
+.project-card.is-zero-match h3 {
+  opacity: 0.62;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   #experience,
   #skills,
-  #education {
+  #projects,
+  #education,
+  #volunteer {
     opacity: 0;
     transform: translateY(8px);
     transition:
@@ -609,7 +724,9 @@ button.chip:focus-visible {
 
   #experience.is-visible,
   #skills.is-visible,
-  #education.is-visible {
+  #projects.is-visible,
+  #education.is-visible,
+  #volunteer.is-visible {
     opacity: 1;
     transform: translateY(0);
   }
@@ -627,7 +744,11 @@ button.chip:focus-visible {
   main {
     display: grid;
     grid-template-columns: var(--sidebar) minmax(0, var(--measure));
-    grid-template-rows: repeat(3, auto);
+
+    /* Row count must match the number of <main> > section children:
+       .hero's `grid-row: 1 / -1` resolves against this explicit grid,
+       so adding/removing a top-level section requires updating this. */
+    grid-template-rows: repeat(5, auto);
     gap: 0 4rem;
     justify-content: center;
     max-width: none;
@@ -675,13 +796,22 @@ button.chip:focus-visible {
 }
 
 @media (max-width: 640px) {
+  /* No-JS fallback: mobile nav wraps to ~2 lines here, taller than the
+     default --chrome-h. JS overwrites --chrome-h on :root with the real
+     measured height once it runs (inline style wins regardless of source
+     order), so this only matters for no-JS anchor scrolls. */
+  :root {
+    --chrome-h: 6.75rem;
+  }
+
   .site-header {
     flex-wrap: wrap;
     row-gap: 0.5rem;
   }
 
   .site-nav {
-    gap: 1.1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
   }
 
   .site-footer {
@@ -712,13 +842,15 @@ button.chip:focus-visible {
 
   #experience,
   #skills,
-  #education {
+  #projects,
+  #education,
+  #volunteer {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
   }
 
-  .timeline-entry ul li.is-dim {
+  .filter-entry ul li.is-dim {
     opacity: 1 !important;
     transition: none !important;
   }
@@ -728,8 +860,31 @@ button.chip:focus-visible {
     box-shadow: none !important;
   }
 
+  .project-card.is-zero-match h3 {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+
   .site-header,
   .filter-bar {
     display: none;
+  }
+
+  /*
+   * The multi-column masonry layout is a screen-viewport space-efficiency
+   * feature — it has no benefit in print, where pages are already a
+   * sequential vertical flow, and CSS multi-column's page-fragmentation
+   * behavior is inconsistent enough across engines to actively work
+   * against pagination. `columns: 1` is not enough on its own — it still
+   * establishes a multicol formatting context, and Chromium does not
+   * reliably honor break-inside: avoid on a descendant of any multicol
+   * container during print fragmentation (confirmed empirically: a card
+   * still split page-to-page with columns: 1 in place). `columns: unset`
+   * removes the multicol context entirely, falling back to plain block
+   * flow, where break-inside: avoid on .project-card behaves normally.
+   */
+  .project-grid {
+    columns: unset;
+    display: block;
   }
 }

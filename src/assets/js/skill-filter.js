@@ -1,7 +1,7 @@
 (function () {
   var chips = Array.prototype.slice.call(document.querySelectorAll("button.chip[data-skill]"));
-  var bullets = Array.prototype.slice.call(document.querySelectorAll(".timeline-entry ul li"));
-  var entries = Array.prototype.slice.call(document.querySelectorAll(".timeline-entry"));
+  var bullets = Array.prototype.slice.call(document.querySelectorAll(".filter-entry ul li"));
+  var entries = Array.prototype.slice.call(document.querySelectorAll(".filter-entry"));
   var header = document.querySelector(".site-header");
   var bar = document.querySelector("[data-filter-bar]");
   var skillsLabel = document.querySelector("[data-filter-skills]");
@@ -71,13 +71,13 @@
     return matched;
   }
 
-  function matchedCompanies() {
+  function matchedSources() {
     var names = [];
     entries.forEach(function (entry) {
       if (!entry.querySelector("li.is-match")) {
         return;
       }
-      var name = entry.getAttribute("data-company");
+      var name = entry.getAttribute("data-source");
       if (name && names.indexOf(name) === -1) {
         names.push(name);
       }
@@ -93,7 +93,7 @@
   }
 
   function summarise(matched) {
-    var where = joinNames(matchedCompanies());
+    var where = joinNames(matchedSources());
     return matched + (matched === 1 ? " match" : " matches") + (where ? " in " + where : "");
   }
 
@@ -118,7 +118,7 @@
     syncChrome();
     if (status) {
       var tail = /\.$/.test(summary) ? "" : ".";
-      status.textContent = "Filtering Experience by " + names + ". " + summary + tail;
+      status.textContent = "Filtering by " + names + ". " + summary + tail;
     }
   }
 
@@ -167,7 +167,7 @@
   // to the li directly, relying on the global scroll-padding-top rule on
   // <html> for the sticky-chrome offset, keeps the match itself on screen.
   function revealFirstMatch() {
-    var li = document.querySelector(".timeline-entry li.is-match");
+    var li = document.querySelector(".filter-entry li.is-match");
     if (!li) {
       return;
     }

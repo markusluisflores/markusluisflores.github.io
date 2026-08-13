@@ -40,7 +40,7 @@ jobs:
       - run: npx stylelint "src/assets/css/**/*.css"
       - run: npm run build
       - run: npx html-validate "_site/**/*.html"
-      - run: npx linkinator _site --recurse --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
+      - run: npx linkinator _site --recurse --retry --retry-errors --skip "https://www.linkedin.com/*" --skip "^https://markusluisflores.github.io/"
       # This repo has no runtime `dependencies` (static site, nothing ships to
       # production) - --omit=dev scopes the audit to that reality instead of
       # failing CI on build-tooling-only advisories with no user exposure.
