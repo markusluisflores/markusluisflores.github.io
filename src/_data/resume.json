@@ -10,19 +10,23 @@
   },
   "experience": [
     {
-      "role": "Software Development Engineer in Test",
+      "role": "SDET – Quality Engineer",
       "company": "Royal Bank of Canada (RBC)",
       "dates": "May 2025 – Present",
       "bullets": [
         {
-          "text": "Design and develop test automation and technical solutions for Charles River Development (CRD), RBC's trading platform in Wealth Management Technology."
+          "text": "Design and develop test automation and tooling for Charles River IMS, the investment management and trading platform used and customized by RBC Wealth Management Technology."
         },
         {
           "text": "Build and maintain automated regression suites using Playwright and RBC's internal testing frameworks.",
           "skills": ["Git", "Playwright"]
         },
         {
-          "text": "Design end-to-end and integration test cases with model-based design tools (ConformIQ, Hexawise), and drive AI-assisted test generation from Jira requirements using GitHub Copilot.",
+          "text": "Test API endpoints with Postman to confirm data accuracy and integration behavior.",
+          "skills": ["Postman"]
+        },
+        {
+          "text": "Author end-to-end and integration test cases with model-based design tools (ConformIQ, Hexawise), and generate cases from Jira requirements with GitHub Copilot.",
           "skills": ["ConformIQ", "Hexawise", "GitHub Copilot"]
         },
         {
@@ -30,12 +34,8 @@
           "skills": ["Git", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         },
         {
-          "text": "Collaborate in Agile ceremonies to align technical work with sprint deliverables.",
-          "skills": ["Agile Scrum Methodology"]
-        },
-        {
-          "text": "Manage test execution and defect triage in Jira and qTest, documenting results and reporting status to stakeholders.",
-          "skills": ["Jira", "qTest"]
+          "text": "Manage test execution and defect triage in Jira and qTest, reporting status to stakeholders across Agile ceremonies.",
+          "skills": ["Jira", "qTest", "Agile Scrum Methodology"]
         }
       ]
     },
