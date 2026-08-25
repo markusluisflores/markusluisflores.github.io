@@ -95,7 +95,6 @@
         "NoSQL",
         "pgvector",
         "Supabase",
-        "Docker",
         "Landmark Pattern Language (LPL)"
       ]
     },
@@ -118,7 +117,7 @@
     },
     {
       "category": "DevOps",
-      "items": ["Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy", "Railway"]
+      "items": ["Docker", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy", "Railway"]
     },
     {
       "category": "Others",
