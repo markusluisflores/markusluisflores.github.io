@@ -12,7 +12,7 @@
     {
       "role": "SDET – Quality Engineer",
       "company": "Royal Bank of Canada (RBC)",
-      "dates": "May 2025 – Present",
+      "dates": "May 2025 – Aug 2026",
       "bullets": [
         {
           "text": "Design and develop test automation and tooling for Charles River IMS, the investment management and trading platform used and customized by RBC Wealth Management Technology."
@@ -147,7 +147,7 @@
     {
       "title": "The Fourth Official",
       "subtitle": "Personal Project",
-      "dates": "Jul 2026 – Present",
+      "dates": "Jul 2026",
       "builtWith": "Next.js, Supabase Postgres + pgvector, Voyage embeddings, Claude Haiku 4.5, Vitest, Railway",
       "links": [
         {
