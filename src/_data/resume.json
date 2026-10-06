@@ -15,26 +15,26 @@
       "dates": "May 2025 – Aug 2026",
       "bullets": [
         {
-          "text": "Design and develop test automation and tooling for Charles River IMS, the investment management and trading platform used and customized by RBC Wealth Management Technology."
+          "text": "Designed and developed test automation and tooling for Charles River IMS, the investment management and trading platform used and customized by RBC Wealth Management Technology."
         },
         {
-          "text": "Build and maintain automated regression suites using Playwright and RBC's internal testing frameworks.",
+          "text": "Built and maintained automated regression suites using Playwright and RBC's internal testing frameworks.",
           "skills": ["Git", "Playwright"]
         },
         {
-          "text": "Test API endpoints with Postman to confirm data accuracy and integration behavior.",
+          "text": "Tested API endpoints with Postman to confirm data accuracy and integration behavior.",
           "skills": ["Postman"]
         },
         {
-          "text": "Author end-to-end and integration test cases with model-based design tools (ConformIQ, Hexawise), and generate cases from Jira requirements with GitHub Copilot.",
+          "text": "Authored end-to-end and integration test cases with model-based design tools (ConformIQ, Hexawise), and generated test cases from Jira requirements with GitHub Copilot.",
           "skills": ["ConformIQ", "Hexawise", "GitHub Copilot"]
         },
         {
-          "text": "Deploy and validate QA environments on Red Hat OpenShift through GitHub Actions and UrbanCode Deploy pipelines, monitoring pod health and logs after each rollout.",
+          "text": "Deployed and validated QA environments on Red Hat OpenShift through GitHub Actions and UrbanCode Deploy pipelines, monitoring pod health and logs after each rollout.",
           "skills": ["Git", "Red Hat OpenShift", "GitHub Actions", "UrbanCode Deploy"]
         },
         {
-          "text": "Manage test execution and defect triage in Jira and qTest, reporting status to stakeholders across Agile ceremonies.",
+          "text": "Managed test execution and defect triage in Jira and qTest, reporting status to stakeholders across Agile ceremonies.",
           "skills": ["Jira", "qTest", "Agile Scrum Methodology"]
         }
       ]
